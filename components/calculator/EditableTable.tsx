@@ -74,7 +74,7 @@ export function EditableTable<T>({
 
   return (
     <div className={`min-w-0 w-full max-w-full overflow-hidden rounded-xl border ${className}`} style={{ background: "var(--surface-muted)", borderColor: "var(--border-default)" }}>
-      <div className="min-w-0 w-full max-w-full overflow-x-auto overscroll-x-contain touch-pan-x scrollable-table">
+      <div className="min-w-0 w-full max-w-full overflow-x-auto overscroll-x-contain scrollable-table" style={{ touchAction: 'auto' }}>
         <table className="w-max min-w-[760px] text-sm">
         <thead>
           <tr className="border-b" style={{ background: "var(--surface-elevated)", borderColor: "var(--border-default)" }}>
