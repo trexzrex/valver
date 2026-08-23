@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verifikasi Metode Analisis by 4TO2</title>
+<style>
+  :root{
+    --ink:#16241f;
+    --paper:#f3efe4;
+    --paper-2:#eae3d2;
+    --line:#c9bfa4;
+    --line-soft:#ddd5bf;
+    --accent:#0f6659;
+    --accent-2:#9a5b1f;
+    --ok:#2f6b3a;
+    --ok-bg:#e2ecdd;
+    --bad:#8a2f24;
+    --bad-bg:#f3e0dc;
+    --mono: 'JetBrains Mono','IBM Plex Mono',Consolas,monospace;
+    --serif: 'Source Serif 4','Iowan Old Style',Georgia,serif;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap');
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    line-height:1.45;
+    padding-bottom:80px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 18px;}
+
+  header.top{
+    border-bottom:3px solid var(--ink);
+    background:
+      repeating-linear-gradient(135deg, rgba(15,102,89,0.05) 0 2px, transparent 2px 14px),
+      var(--paper);
+    padding:28px 0 18px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:flex;align-items:center;gap:8px;
+  }
+  .eyebrow::before{content:"◆";font-size:9px;}
+  h1{
+    font-size:clamp(26px,4vw,38px);
+    margin:6px 0 4px;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  .sub{color:#4a5a52;font-size:14.5px;max-width:640px;}
+
+  .id-grid{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:10px 14px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:14px 16px;
+  }
+  .id-field label{
+    display:block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:#6b6250;margin-bottom:3px;
+  }
+  .id-field input{
+    width:100%;border:none;border-bottom:1px solid var(--line);background:transparent;
+    font-family:var(--serif);font-size:14px;padding:3px 0;color:var(--ink);
+  }
+  .id-field input:focus{outline:none;border-bottom:1px solid var(--accent);}
+
+  nav.toc{
+    display:flex;flex-wrap:wrap;gap:6px 4px;
+    padding:14px 0;border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:11.5px;
+  }
+  nav.toc a{
+    color:var(--ink);text-decoration:none;border:1px solid var(--line);
+    padding:5px 10px;border-radius:20px;background:#fff8;
+  }
+  nav.toc a:hover{border-color:var(--accent);color:var(--accent);}
+
+  section.card{
+    margin-top:34px;
+    border:1px solid var(--line);
+    background:#fffdf8;
+    position:relative;
+  }
+  section.card > .head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:14px 18px;border-bottom:2px solid var(--ink);
+    background:var(--ink);color:var(--paper);
+  }
+  section.card > .head .num{
+    font-family:var(--mono);font-size:11px;opacity:.65;letter-spacing:.1em;
+  }
+  section.card > .head h2{
+    font-size:18px;margin:2px 0 0;font-weight:700;font-family:var(--serif);
+  }
+  .body{padding:18px;}
+  .note{font-size:13px;color:#5a5346;margin:0 0 14px;max-width:680px;}
+  .note code{font-family:var(--mono);background:var(--paper-2);padding:1px 5px;border-radius:3px;}
+
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;}
+  th,td{border:1px solid var(--line-soft);padding:6px 7px;text-align:right;}
+  th{background:var(--paper-2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;}
+  td:first-child,th:first-child{text-align:center;color:#847a63;}
+  tfoot td{background:var(--paper-2);font-weight:700;}
+  .tblwrap{overflow-x:auto;}
+  input.cell{
+    width:100%;border:none;background:transparent;font-family:var(--mono);
+    font-size:12.5px;text-align:right;padding:2px;color:var(--ink);
+  }
+  input.cell:focus{outline:2px solid var(--accent);outline-offset:-1px;background:#fff;}
+  td.calc{color:var(--accent-2);background:#faf5ea;}
+  .rowbtns{display:flex;gap:6px;margin-top:8px;}
+  button.mini{
+    font-family:var(--mono);font-size:11px;padding:5px 10px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;border-radius:3px;
+  }
+  button.mini:hover{border-color:var(--accent);color:var(--accent);}
+
+  .results{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:16px;
+  }
+  .result{background:#fffdf8;padding:12px 14px;}
+  .result .k{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:#6b6250;}
+  .result .v{font-family:var(--mono);font-size:19px;font-weight:700;margin-top:3px;color:var(--ink);}
+  .result .v.small{font-size:14px;}
+
+  .status{
+    display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
+    font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.03em;
+  }
+  .status.ok{background:var(--ok-bg);color:var(--ok);}
+  .status.bad{background:var(--bad-bg);color:var(--bad);}
+  .status::before{content:"●";font-size:8px;}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:800px){.twocol{grid-template-columns:1fr;}}
+
+  .inline-inputs{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+  .inline-inputs .fi{display:flex;flex-direction:column;gap:3px;}
+  .inline-inputs label{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;color:#6b6250;letter-spacing:.06em;}
+  .inline-inputs input{
+    font-family:var(--mono);border:1px solid var(--line);padding:6px 8px;border-radius:3px;
+    width:110px;background:#fff;font-size:13px;
+  }
+
+  svg.chart{width:100%;height:280px;background:#fffdf8;border:1px solid var(--line-soft);}
+  .axis-label{font-family:var(--mono);font-size:10px;fill:#6b6250;}
+
+  .criteria-table td:nth-child(2){text-align:left;}
+  .criteria-table td:first-child{text-align:left;}
+
+  footer.actions{
+    position:sticky;bottom:0;background:var(--ink);border-top:2px solid var(--accent);
+    padding:12px 0;margin-top:40px;
+  }
+  footer.actions .wrap{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  footer.actions button{
+    font-family:var(--mono);font-size:12px;padding:9px 16px;border-radius:3px;border:1px solid #48584f;
+    background:#1e2f27;color:var(--paper);cursor:pointer;letter-spacing:.03em;
+  }
+  footer.actions button:hover{border-color:var(--accent);color:#8fd3c4;}
+  footer.actions button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  @media print{
+    footer.actions,nav.toc,.rowbtns{display:none !important;}
+    body{background:#fff;}
+    section.card{break-inside:avoid;}
+  }
+  body.pdf-exporting footer.actions,
+  body.pdf-exporting nav.toc,
+  body.pdf-exporting .rowbtns,
+  body.pdf-exporting input.cell{
+    /* keep inputs visible but strip focus rings while capturing */
+  }
+  body.pdf-exporting footer.actions,
+  body.pdf-exporting nav.toc,
+  body.pdf-exporting .rowbtns{
+    display:none !important;
+  }
+  footer.actions button:disabled{opacity:.5;cursor:wait;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Job Sheet Digital · Spektrofotometer UV-Vis</div>
+    <h1>Verifikasi Metode Analisis by 4TO2</h1>
+    <p class="sub">Kalkulator kurva kalibrasi, linearitas, working range, presisi, akurasi, limit deteksi (MDL), dan uji spike — semuanya terhubung otomatis dari satu kurva kalibrasi. Isi data pengukuran, hasil dihitung langsung.</p>
+
+    <div class="id-grid">
+      <div class="id-field"><label>Nama</label><input id="id-nama" placeholder="—"></div>
+      <div class="id-field"><label>NIS</label><input id="id-nis" placeholder="—"></div>
+      <div class="id-field"><label>Kelas</label><input id="id-kelas" placeholder="—"></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <a href="#s1">1 · Kurva Kalibrasi</a>
+    <a href="#s2">2 · Korelasi (R)</a>
+    <a href="#s3">3 · Working Range</a>
+    <a href="#s4">4 · Presisi</a>
+    <a href="#s5">5 · Akurasi</a>
+    <a href="#s6">6 · Limit Deteksi</a>
+    <a href="#s7">7 · Uji Spike</a>
+    <a href="#s8">8 · Keberterimaan MDL</a>
+  </nav>
+
+  <!-- SECTION 1: KURVA KALIBRASI -->
+  <section class="card" id="s1">
+    <div class="head"><div><span class="num">01</span><h2>Kurva Kalibrasi</h2></div></div>
+    <div class="body">
+      <div class="tblwrap">
+        <table id="tbl-kal">
+          <thead><tr><th>No</th><th>ppm (x)</th><th>Absorban (y)</th><th>x²</th><th>y²</th><th>x·y</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td>Σ</td><td class="calc" data-f="sumx"></td><td class="calc" data-f="sumy"></td><td class="calc" data-f="sumx2"></td><td class="calc" data-f="sumy2"></td><td class="calc" data-f="sumxy"></td></tr>
+          <tr><td>Rata²</td><td class="calc" data-f="avgx"></td><td class="calc" data-f="avgy"></td><td colspan="3"></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="rowbtns">
+        <button class="mini" onclick="addRow('kal')">+ baris</button>
+        <button class="mini" onclick="delRow('kal')">− baris</button>
+      </div>
+
+      <div class="results">
+        <div class="result"><div class="k">Slope (B)</div><div class="v" id="r-slope">—</div></div>
+        <div class="result"><div class="k">Intercept (A)</div><div class="v" id="r-intercept">—</div></div>
+        <div class="result"><div class="k">Persamaan garis</div><div class="v small" id="r-eq">—</div></div>
+      </div>
+
+      <svg class="chart" id="chart" viewBox="0 0 600 280"></svg>
+      <div class="tblwrap">
+        <table id="tbl-linear">
+          <thead><tr><th>No</th><th>ppm (x)</th><th>Sebelum Linear</th><th>Setelah Linear</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: KORELASI -->
+  <section class="card" id="s2">
+    <div class="head"><div><span class="num">02</span><h2>Koefisien Korelasi (R)</h2></div></div>
+    <div class="body">
+
+      <h3 style="font-family:var(--mono);font-size:13px;margin:18px 0 8px;">Cara Satu</h3>
+      <div class="tblwrap">
+        <table id="tbl-korel1">
+          <thead><tr><th>No</th><th>ppm (x)</th><th>Absorban (y)</th><th>x²</th><th>y²</th><th>x·y</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td>Σ</td><td class="calc" data-f="sumx"></td><td class="calc" data-f="sumy"></td><td class="calc" data-f="sumx2"></td><td class="calc" data-f="sumy2"></td><td class="calc" data-f="sumxy"></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="results" style="grid-template-columns:1fr;margin-top:10px;">
+        <div class="result"><div class="k">R — Rumus 1 (Σxy)</div><div class="v" id="r-r1">—</div></div>
+      </div>
+
+      <h3 style="font-family:var(--mono);font-size:13px;margin:22px 0 8px;">Cara Dua</h3>
+      <div class="tblwrap">
+        <table id="tbl-korel2">
+          <thead><tr><th>No</th><th>ppm (x)</th><th>Absorban (y)</th><th>x−x̄</th><th>(x−x̄)²</th><th>y−ȳ</th><th>(y−ȳ)²</th><th>(x−x̄)(y−ȳ)</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="3">Σ</td><td></td><td class="calc" data-f="sumxx"></td><td></td><td class="calc" data-f="sumyy"></td><td class="calc" data-f="sumxy2"></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="results" style="grid-template-columns:1fr;margin-top:10px;">
+        <div class="result"><div class="k">R — Rumus 2 (Σ(x−x̄)(y−ȳ))</div><div class="v" id="r-r2">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: WORKING RANGE -->
+  <section class="card" id="s3">
+    <div class="head"><div><span class="num">03</span><h2>Working Range Kurva Kalibrasi</h2></div></div>
+    <div class="body">
+      <div class="twocol">
+        <div>
+          <div class="inline-inputs"><div class="fi"><label>Standar rendah (ppm)</label><input type="number" step="any" id="std-low" value="0.2" oninput="recalc()"></div></div>
+          <div class="tblwrap">
+            <table id="tbl-wr-low">
+              <thead><tr><th>No</th><th>Absorban</th><th>ppm (x)</th><th>x−x̄</th><th>(x−x̄)²</th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="2">Rata-rata</td><td class="calc" data-f="avg"></td><td></td><td class="calc" data-f="sumsq"></td></tr></tfoot>
+            </table>
+          </div>
+          <div class="rowbtns"><button class="mini" onclick="addRow('wrlow')">+ baris</button><button class="mini" onclick="delRow('wrlow')">− baris</button></div>
+          <div class="results"><div class="result"><div class="k">S² (standar rendah)</div><div class="v small" id="r-s2low">—</div></div></div>
+        </div>
+        <div>
+          <div class="inline-inputs"><div class="fi"><label>Standar tinggi (ppm)</label><input type="number" step="any" id="std-high" value="10" oninput="recalc()"></div></div>
+          <div class="tblwrap">
+            <table id="tbl-wr-high">
+              <thead><tr><th>No</th><th>Absorban</th><th>ppm (x)</th><th>x−x̄</th><th>(x−x̄)²</th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td colspan="2">Rata-rata</td><td class="calc" data-f="avg"></td><td></td><td class="calc" data-f="sumsq"></td></tr></tfoot>
+            </table>
+          </div>
+          <div class="rowbtns"><button class="mini" onclick="addRow('wrhigh')">+ baris</button><button class="mini" onclick="delRow('wrhigh')">− baris</button></div>
+          <div class="results"><div class="result"><div class="k">S² (standar tinggi)</div><div class="v small" id="r-s2high">—</div></div></div>
+        </div>
+      </div>
+
+      <div class="results" style="margin-top:18px;">
+        <div class="result"><div class="k">PG = S²tinggi / S²rendah</div><div class="v" id="r-pg">—</div></div>
+        <div class="result"><div class="k">F tabel (99%; 11,9)</div><div class="v">5,18</div></div>
+        <div class="result"><div class="k">Status Range</div><div class="v" id="r-pgstatus">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: PRESISI -->
+  <section class="card" id="s4">
+    <div class="head"><div><span class="num">04</span><h2>Perhitungan Presisi</h2></div></div>
+    <div class="body">
+      <div class="twocol">
+        <div>
+          <h3 style="font-family:var(--mono);font-size:13px;margin:0 0 8px;">Standar rendah</h3>
+          <div class="results" style="grid-template-columns:1fr 1fr;">
+            <div class="result"><div class="k">SD</div><div class="v small" id="r-sdlow">—</div></div>
+            <div class="result"><div class="k">SDR (%)</div><div class="v small" id="r-sdrlow">—</div></div>
+            <div class="result"><div class="k">CV Horwitz</div><div class="v small" id="r-cvlow">—</div></div>
+            <div class="result"><div class="k">0,67 × CV Horwitz</div><div class="v small" id="r-cv67low">—</div></div>
+          </div>
+          <div style="margin-top:10px;">Status: <span class="status" id="r-presisistatuslow">—</span></div>
+        </div>
+        <div>
+          <h3 style="font-family:var(--mono);font-size:13px;margin:0 0 8px;">Standar tinggi</h3>
+          <div class="results" style="grid-template-columns:1fr 1fr;">
+            <div class="result"><div class="k">SD</div><div class="v small" id="r-sdhigh">—</div></div>
+            <div class="result"><div class="k">SDR (%)</div><div class="v small" id="r-sdrhigh">—</div></div>
+            <div class="result"><div class="k">CV Horwitz</div><div class="v small" id="r-cvhigh">—</div></div>
+            <div class="result"><div class="k">0,67 × CV Horwitz</div><div class="v small" id="r-cv67high">—</div></div>
+          </div>
+          <div style="margin-top:10px;">Status: <span class="status" id="r-presisistatushigh">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: AKURASI -->
+  <section class="card" id="s5">
+    <div class="head"><div><span class="num">05</span><h2>Perhitungan Akurasi</h2></div></div>
+    <div class="body">
+      <div class="twocol">
+        <div class="results" style="grid-template-columns:1fr;">
+          <div class="result"><div class="k">%Akurasi — standar rendah</div><div class="v" id="r-acclow">—</div></div>
+          <div style="padding:0 14px 12px;">Status: <span class="status" id="r-accstatuslow">—</span></div>
+        </div>
+        <div class="results" style="grid-template-columns:1fr;">
+          <div class="result"><div class="k">%Akurasi — standar tinggi</div><div class="v" id="r-acchigh">—</div></div>
+          <div style="padding:0 14px 12px;">Status: <span class="status" id="r-accstatushigh">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: LOD -->
+  <section class="card" id="s6">
+    <div class="head"><div><span class="num">06</span><h2>Limit Deteksi Metode (Blanko)</h2></div></div>
+    <div class="body">
+      <div class="tblwrap">
+        <table id="tbl-blanko">
+          <thead><tr><th>No</th><th>Absorban</th><th>ppm (x)</th><th>x−x̄</th><th>(x−x̄)²</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="2">Rata-rata</td><td class="calc" data-f="avg"></td><td></td><td class="calc" data-f="sumsq"></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="rowbtns"><button class="mini" onclick="addRow('blanko')">+ baris</button><button class="mini" onclick="delRow('blanko')">− baris</button></div>
+      <div class="results">
+        <div class="result"><div class="k">SD blanko</div><div class="v" id="r-sdblanko">—</div></div>
+        <div class="result"><div class="k">Est. MDL = 5 × SD</div><div class="v" id="r-estmdl">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: SPIKE -->
+  <section class="card" id="s7">
+    <div class="head"><div><span class="num">07</span><h2>Uji Spike Level</h2></div></div>
+    <div class="body">
+      <div class="inline-inputs"><div class="fi"><label>Konsentrasi spike nominal (ppm)</label><input type="number" step="any" id="spike-conc" value="4" oninput="recalc()"></div></div>
+      <div class="tblwrap">
+        <table id="tbl-spike">
+          <thead><tr><th>No</th><th>Absorban</th><th>ppm (x)</th><th>x−x̄</th><th>(x−x̄)²</th><th>% Recovery</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="2">Rata-rata</td><td class="calc" data-f="avg"></td><td></td><td class="calc" data-f="sumsq"></td><td class="calc" data-f="avgrec"></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="rowbtns"><button class="mini" onclick="addRow('spike')">+ baris</button><button class="mini" onclick="delRow('spike')">− baris</button></div>
+      <div class="results">
+        <div class="result"><div class="k">SD spike</div><div class="v" id="r-sdspike">—</div></div>
+        <div class="result"><div class="k">MDL = 2,821 × SD</div><div class="v" id="r-mdl">—</div></div>
+        <div class="result"><div class="k">LOQ = 10 × MDL</div><div class="v" id="r-loq">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8: KEBERTERIMAAN -->
+  <section class="card" id="s8">
+    <div class="head"><div><span class="num">08</span><h2>Uji Keberterimaan MDL</h2></div></div>
+    <div class="body">
+      <div class="inline-inputs"><div class="fi"><label>Requirement MDL (mis. 0,05)</label><input type="number" step="any" id="mdl-req" value="0.05" oninput="recalc()"></div></div>
+      <div class="tblwrap">
+        <table class="criteria-table" id="tbl-criteria">
+          <thead><tr><th>Kriteria</th><th>Hasil</th><th>Requirement</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer class="actions">
+  <div class="wrap">
+    <button class="primary" id="btn-pdf" onclick="downloadPDF()">⬇ Unduh PDF</button>
+    <button onclick="if(confirm('Reset semua data?'))resetAll()">↺ Reset Data</button>
+  </div>
+</footer>
+
+<script>
+// ---------- state ----------
+let kal = [];      // {x,y}
+let wrLow = [];    // {abs}
+let wrHigh = [];
+let blanko = [];
+let spike = [];
+
+function emptyKal(n){ return Array.from({length:n},()=>({x:'',y:''})); }
+function emptyRows(n){ return Array.from({length:n},()=>({abs:'',ppm:''})); }
+
+function initState(){
+  kal = emptyKal(12);
+  wrLow = emptyRows(10);
+  wrHigh = emptyRows(10);
+  blanko = emptyRows(10);
+  spike = emptyRows(10);
+}
+initState();
+
+// ---------- helpers ----------
+const num = v => (v===''||v===null||v===undefined||isNaN(v)) ? NaN : parseFloat(v);
+const fmt = (v,d=8) => (v===null||v===undefined||isNaN(v)) ? '—' : Number(v).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt2 = (v,d=2) => (v===null||v===undefined||isNaN(v)) ? '—' : Number(v).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function statusBadge(el, ok, textOk, textBad){
+  el.className = 'status ' + (ok ? 'ok':'bad');
+  el.textContent = ok ? (textOk||'OK') : (textBad||'NOT OK');
+}
+
+// ---------- paste-from-excel support ----------
+function normalizePasted(v){
+  v = (v||'').trim().replace(/\u00a0/g,'');
+  if(/^-?\d+,\d+$/.test(v)) v = v.replace(',', '.'); // handle Indonesian comma-decimal
+  return v;
+}
+function parseClipboard(text){
+  let rows = text.replace(/\r/g,'').split('\n');
+  while(rows.length && rows[rows.length-1]==='') rows.pop();
+  return rows.map(r=>r.split('\t').map(normalizePasted));
+}
+// Pastes a 2D block of Excel data starting at (startRow, startFieldIdx) into dataArr,
+// growing dataArr with new rows as needed, then re-renders and recalculates.
+function handlePaste(e, dataArr, fieldOrder, makeEmptyRow, startRow, startField, renderFn){
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if(!text || !text.trim()) return;
+  e.preventDefault();
+  const grid = parseClipboard(text);
+  const startFieldIdx = fieldOrder.indexOf(startField);
+  grid.forEach((cols,ri)=>{
+    const targetRow = startRow + ri;
+    while(dataArr.length <= targetRow) dataArr.push(makeEmptyRow());
+    cols.forEach((val,ci)=>{
+      const fieldIdx = startFieldIdx + ci;
+      if(fieldIdx>=0 && fieldIdx<fieldOrder.length){
+        dataArr[targetRow][fieldOrder[fieldIdx]] = val;
+      }
+    });
+  });
+  renderFn();
+  recalc();
+}
+
+// ---------- render: kalibrasi table ----------
+function renderKal(){
+  const tb = document.querySelector('#tbl-kal tbody');
+  tb.innerHTML = '';
+  kal.forEach((row,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td><input class="cell" type="number" step="any" value="${row.x}" data-idx="${i}" data-field="x"></td>
+      <td><input class="cell" type="number" step="any" value="${row.y}" data-idx="${i}" data-field="y"></td>
+      <td class="calc" id="kal-x2-${i}"></td>
+      <td class="calc" id="kal-y2-${i}"></td>
+      <td class="calc" id="kal-xy-${i}"></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input.cell').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      kal[e.target.dataset.idx][e.target.dataset.field] = e.target.value;
+      recalc();
+    });
+    inp.addEventListener('paste', e=>{
+      handlePaste(e, kal, ['x','y'], ()=>({x:'',y:''}), parseInt(inp.dataset.idx), inp.dataset.field, renderKal);
+    });
+  });
+}
+function addRow(which){
+  if(which==='kal'){ kal.push({x:'',y:''}); renderKal(); }
+  else if(which==='wrlow'){ wrLow.push({abs:'',ppm:''}); renderReplicateTable('#tbl-wr-low tbody', wrLow); }
+  else if(which==='wrhigh'){ wrHigh.push({abs:'',ppm:''}); renderReplicateTable('#tbl-wr-high tbody', wrHigh); }
+  else if(which==='blanko'){ blanko.push({abs:'',ppm:''}); renderReplicateTable('#tbl-blanko tbody', blanko, i=>'Blanko '+(i+1)); }
+  else if(which==='spike'){ spike.push({abs:'',ppm:''}); renderReplicateTable('#tbl-spike tbody', spike, i=>'Spike '+(i+1)); }
+  recalc();
+}
+function delRow(which){
+  if(which==='kal' && kal.length>2){ kal.pop(); renderKal(); }
+  else if(which==='wrlow' && wrLow.length>1){ wrLow.pop(); renderReplicateTable('#tbl-wr-low tbody', wrLow); }
+  else if(which==='wrhigh' && wrHigh.length>1){ wrHigh.pop(); renderReplicateTable('#tbl-wr-high tbody', wrHigh); }
+  else if(which==='blanko' && blanko.length>1){ blanko.pop(); renderReplicateTable('#tbl-blanko tbody', blanko, i=>'Blanko '+(i+1)); }
+  else if(which==='spike' && spike.length>1){ spike.pop(); renderReplicateTable('#tbl-spike tbody', spike, i=>'Spike '+(i+1)); }
+  recalc();
+}
+
+// ---------- render generic replicate table (abs + ppm editable) ----------
+function renderReplicateTable(bodySel, dataArr, labelFn){
+  const tb = document.querySelector(bodySel);
+  tb.innerHTML = '';
+  dataArr.forEach((row,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${labelFn ? labelFn(i) : i+1}</td>
+      <td><input class="cell" type="number" step="any" value="${row.abs}" data-idx="${i}" data-field="abs"></td>
+      <td><input class="cell" type="number" step="any" value="${row.ppm}" data-idx="${i}" data-field="ppm"></td>
+      <td class="calc" data-idx="${i}" data-field="dev"></td>
+      <td class="calc" data-idx="${i}" data-field="devsq"></td>
+      ${bodySel.includes('spike') ? `<td class="calc" data-idx="${i}" data-field="rec"></td>` : ''}
+    `;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input.cell').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      dataArr[e.target.dataset.idx][e.target.dataset.field] = e.target.value;
+      recalc();
+    });
+    inp.addEventListener('paste', e=>{
+      handlePaste(e, dataArr, ['abs','ppm'], ()=>({abs:'',ppm:''}), parseInt(inp.dataset.idx), inp.dataset.field, ()=>renderReplicateTable(bodySel, dataArr, labelFn));
+    });
+  });
+}
+
+function initTables(){
+  renderKal();
+  renderReplicateTable('#tbl-wr-low tbody', wrLow);
+  renderReplicateTable('#tbl-wr-high tbody', wrHigh);
+  renderReplicateTable('#tbl-blanko tbody', blanko, i=>'Blanko '+(i+1));
+  renderReplicateTable('#tbl-spike tbody', spike, i=>'Spike '+(i+1));
+}
+initTables();
+
+// ---------- core calc ----------
+function computeCalibration(){
+  const rows = kal.map(r=>({x:num(r.x), y:num(r.y)})).filter(r=>!isNaN(r.x) && !isNaN(r.y));
+  const n = rows.length;
+  const sumx = rows.reduce((a,r)=>a+r.x,0);
+  const sumy = rows.reduce((a,r)=>a+r.y,0);
+  const sumx2 = rows.reduce((a,r)=>a+r.x*r.x,0);
+  const sumy2 = rows.reduce((a,r)=>a+r.y*r.y,0);
+  const sumxy = rows.reduce((a,r)=>a+r.x*r.y,0);
+  const avgx = n? sumx/n : NaN;
+  const avgy = n? sumy/n : NaN;
+
+  const B = (n*sumxy - sumx*sumy) / (n*sumx2 - sumx*sumx);
+  const A = avgy - B*avgx;
+
+  const r1num = n*sumxy - sumx*sumy;
+  const r1den = Math.sqrt((n*sumx2 - sumx*sumx) * (n*sumy2 - sumy*sumy));
+  const R1 = r1num / r1den;
+
+  let sxy=0,sxx=0,syy=0;
+  rows.forEach(r=>{
+    sxy += (r.x-avgx)*(r.y-avgy);
+    sxx += (r.x-avgx)*(r.x-avgx);
+    syy += (r.y-avgy)*(r.y-avgy);
+  });
+  const R2 = sxy / (Math.sqrt(sxx)*Math.sqrt(syy));
+
+  return {rows,n,sumx,sumy,sumx2,sumy2,sumxy,avgx,avgy,A,B,R1,R2};
+}
+
+function computeReplicateSet(dataArr){
+  const vals = dataArr.map(r=>num(r.ppm));
+  const valid = vals.filter(v=>!isNaN(v));
+  const n = valid.length;
+  const avg = n? valid.reduce((a,b)=>a+b,0)/n : NaN;
+  const devs = vals.map(v=> isNaN(v) ? NaN : v-avg);
+  const devsq = devs.map(d=> isNaN(d) ? NaN : d*d);
+  const sumsq = devsq.filter(v=>!isNaN(v)).reduce((a,b)=>a+b,0);
+  const s2 = n>1 ? sumsq/(n-1) : NaN;
+  return {vals,avg,devs,devsq,sumsq,s2,n};
+}
+
+function cvHorwitz(ppmConc){
+  const C = ppmConc * 1e-6;
+  return Math.pow(2, 1-0.5*Math.log10(C));
+}
+
+// ---------- draw chart ----------
+function drawChart(calibr){
+  const svg = document.getElementById('chart');
+  svg.innerHTML='';
+  const W=600,H=280,pad={l:50,r:20,t:20,b:36};
+  const rows = calibr.rows;
+  if(rows.length<2){ return; }
+  const xs = rows.map(r=>r.x), ys = rows.map(r=>r.y);
+  const xmin=Math.min(...xs,0), xmax=Math.max(...xs);
+  const ymin=Math.min(...ys,0), ymax=Math.max(...ys);
+  const sx = x => pad.l + (x-xmin)/(xmax-xmin||1)*(W-pad.l-pad.r);
+  const sy = y => H-pad.b - (y-ymin)/(ymax-ymin||1)*(H-pad.t-pad.b);
+
+  const ns='http://www.w3.org/2000/svg';
+  function el(tag,attrs){const e=document.createElementNS(ns,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+  // axes
+  svg.appendChild(el('line',{x1:pad.l,y1:H-pad.b,x2:W-pad.r,y2:H-pad.b,stroke:'#c9bfa4'}));
+  svg.appendChild(el('line',{x1:pad.l,y1:pad.t,x2:pad.l,y2:H-pad.b,stroke:'#c9bfa4'}));
+
+  // regression line
+  const lx1=xmin, lx2=xmax;
+  const ly1 = calibr.B*lx1 + calibr.A;
+  const ly2 = calibr.B*lx2 + calibr.A;
+  svg.appendChild(el('line',{x1:sx(lx1),y1:sy(ly1),x2:sx(lx2),y2:sy(ly2),stroke:'#0f6659','stroke-width':2}));
+
+  // points
+  rows.forEach(r=>{
+    svg.appendChild(el('circle',{cx:sx(r.x),cy:sy(r.y),r:4,fill:'#9a5b1f'}));
+  });
+
+  // labels
+  const t1 = el('text',{x:pad.l,y:H-8,class:'axis-label'}); t1.textContent = `ppm (x): ${fmt2(xmin,1)} – ${fmt2(xmax,1)}`;
+  svg.appendChild(t1);
+  const t2 = el('text',{x:6,y:pad.t+10,class:'axis-label',transform:`rotate(-90 6 ${pad.t+10})`}); t2.textContent='Absorban (y)';
+  svg.appendChild(t2);
+  const t3 = el('text',{x:W-190,y:pad.t+14,class:'axis-label'}); t3.setAttribute('fill','#0f6659');
+  t3.textContent = `y = ${fmt2(calibr.B,4)}x + ${fmt2(calibr.A,4)}   R=${fmt2(calibr.R1,4)}`;
+  svg.appendChild(t3);
+}
+
+// ---------- master recalc ----------
+function recalc(){
+  const calibr = computeCalibration();
+
+  // fill kalibrasi table computed cells
+  kal.forEach((row,i)=>{
+    const x=num(row.x), y=num(row.y);
+    const x2 = document.getElementById('kal-x2-'+i);
+    const y2 = document.getElementById('kal-y2-'+i);
+    const xy = document.getElementById('kal-xy-'+i);
+    if(x2) x2.textContent = isNaN(x)? '—' : fmt(x*x);
+    if(y2) y2.textContent = isNaN(y)? '—' : fmt(y*y);
+    if(xy) xy.textContent = (isNaN(x)||isNaN(y))? '—' : fmt(x*y);
+  });
+  document.querySelector('#tbl-kal [data-f="sumx"]').textContent = fmt(calibr.sumx);
+  document.querySelector('#tbl-kal [data-f="sumy"]').textContent = fmt(calibr.sumy);
+  document.querySelector('#tbl-kal [data-f="sumx2"]').textContent = fmt(calibr.sumx2);
+  document.querySelector('#tbl-kal [data-f="sumy2"]').textContent = fmt(calibr.sumy2);
+  document.querySelector('#tbl-kal [data-f="sumxy"]').textContent = fmt(calibr.sumxy);
+  document.querySelector('#tbl-kal [data-f="avgx"]').textContent = fmt(calibr.avgx);
+  document.querySelector('#tbl-kal [data-f="avgy"]').textContent = fmt(calibr.avgy);
+
+  document.getElementById('r-slope').textContent = fmt(calibr.B,8);
+  document.getElementById('r-intercept').textContent = fmt(calibr.A,8);
+  document.getElementById('r-eq').textContent = `y = ${fmt(calibr.B,8)}x ${calibr.A>=0?'+':'−'} ${fmt(Math.abs(calibr.A),8)}`;
+  document.getElementById('r-r1').textContent = fmt(calibr.R1);
+  document.getElementById('r-r2').textContent = fmt(calibr.R2);
+
+  // korelasi cara satu (mirrors calibration table row-for-row, top to bottom)
+  const tbK1 = document.querySelector('#tbl-korel1 tbody');
+  tbK1.innerHTML='';
+  kal.forEach((row,i)=>{
+    const x=num(row.x), y=num(row.y);
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td>${isNaN(x)?'—':fmt2(x,2)}</td><td>${isNaN(y)?'—':fmt(y)}</td><td class="calc">${isNaN(x)?'—':fmt(x*x)}</td><td class="calc">${isNaN(y)?'—':fmt(y*y)}</td><td class="calc">${(isNaN(x)||isNaN(y))?'—':fmt(x*y)}</td>`;
+    tbK1.appendChild(tr);
+  });
+  document.querySelector('#tbl-korel1 [data-f="sumx"]').textContent = fmt(calibr.sumx);
+  document.querySelector('#tbl-korel1 [data-f="sumy"]').textContent = fmt(calibr.sumy);
+  document.querySelector('#tbl-korel1 [data-f="sumx2"]').textContent = fmt(calibr.sumx2);
+  document.querySelector('#tbl-korel1 [data-f="sumy2"]').textContent = fmt(calibr.sumy2);
+  document.querySelector('#tbl-korel1 [data-f="sumxy"]').textContent = fmt(calibr.sumxy);
+
+  // korelasi cara dua (mirrors calibration table row-for-row, top to bottom)
+  const tbK2 = document.querySelector('#tbl-korel2 tbody');
+  tbK2.innerHTML='';
+  let sumxx=0,sumyy=0,sumxy2=0;
+  kal.forEach((row,i)=>{
+    const x=num(row.x), y=num(row.y);
+    const validPair = !isNaN(x) && !isNaN(y);
+    const dx = validPair ? x-calibr.avgx : NaN;
+    const dy = validPair ? y-calibr.avgy : NaN;
+    if(validPair){ sumxx += dx*dx; sumyy += dy*dy; sumxy2 += dx*dy; }
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td>${isNaN(x)?'—':fmt2(x,2)}</td><td>${isNaN(y)?'—':fmt(y)}</td><td class="calc">${isNaN(dx)?'—':fmt(dx)}</td><td class="calc">${isNaN(dx)?'—':fmt(dx*dx)}</td><td class="calc">${isNaN(dy)?'—':fmt(dy)}</td><td class="calc">${isNaN(dy)?'—':fmt(dy*dy)}</td><td class="calc">${(isNaN(dx)||isNaN(dy))?'—':fmt(dx*dy)}</td>`;
+    tbK2.appendChild(tr);
+  });
+  document.querySelector('#tbl-korel2 [data-f="sumxx"]').textContent = fmt(sumxx);
+  document.querySelector('#tbl-korel2 [data-f="sumyy"]').textContent = fmt(sumyy);
+  document.querySelector('#tbl-korel2 [data-f="sumxy2"]').textContent = fmt(sumxy2);
+
+  // linear before/after table
+  const tbLin = document.querySelector('#tbl-linear tbody');
+  tbLin.innerHTML='';
+  kal.forEach((row,i)=>{
+    const x=num(row.x), y=num(row.y);
+    const pred = calibr.B*x + calibr.A;
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td>${isNaN(x)?'—':fmt2(x,2)}</td><td>${isNaN(y)?'—':fmt(y)}</td><td class="calc">${isNaN(pred)?'—':fmt(pred)}</td>`;
+    tbLin.appendChild(tr);
+  });
+
+  drawChart(calibr);
+
+  // ---- working range ----
+  const low = computeReplicateSet(wrLow);
+  const high = computeReplicateSet(wrHigh);
+  fillReplicateTable('#tbl-wr-low tbody', low);
+  fillReplicateTable('#tbl-wr-high tbody', high);
+  document.querySelector('#tbl-wr-low [data-f="avg"]').textContent = fmt(low.avg);
+  document.querySelector('#tbl-wr-low [data-f="sumsq"]').textContent = fmt(low.sumsq);
+  document.querySelector('#tbl-wr-high [data-f="avg"]').textContent = fmt(high.avg);
+  document.querySelector('#tbl-wr-high [data-f="sumsq"]').textContent = fmt(high.sumsq);
+  document.getElementById('r-s2low').textContent = fmt(low.s2,9);
+  document.getElementById('r-s2high').textContent = fmt(high.s2,9);
+
+  const PG = high.s2/low.s2;
+  document.getElementById('r-pg').textContent = fmt2(PG,3);
+  const pgOk = PG < 5.18;
+  statusBadge(document.getElementById('r-pgstatus'), pgOk, 'OK','NOT OK');
+
+  // ---- presisi ----
+  const stdLow = num(document.getElementById('std-low').value);
+  const stdHigh = num(document.getElementById('std-high').value);
+
+  const sdLow = Math.sqrt(low.s2), sdHigh = Math.sqrt(high.s2);
+  const sdrLow = sdLow*100/low.avg, sdrHigh = sdHigh*100/high.avg;
+  const cvLow = cvHorwitz(stdLow), cvHigh = cvHorwitz(stdHigh);
+  const cv67Low = 0.67*cvLow, cv67High = 0.67*cvHigh;
+
+  document.getElementById('r-sdlow').textContent = fmt(sdLow);
+  document.getElementById('r-sdrlow').textContent = fmt2(sdrLow,3)+'%';
+  document.getElementById('r-cvlow').textContent = fmt2(cvLow,3);
+  document.getElementById('r-cv67low').textContent = fmt2(cv67Low,3);
+  statusBadge(document.getElementById('r-presisistatuslow'), sdrLow < cv67Low);
+
+  document.getElementById('r-sdhigh').textContent = fmt(sdHigh);
+  document.getElementById('r-sdrhigh').textContent = fmt2(sdrHigh,3)+'%';
+  document.getElementById('r-cvhigh').textContent = fmt2(cvHigh,3);
+  document.getElementById('r-cv67high').textContent = fmt2(cv67High,3);
+  statusBadge(document.getElementById('r-presisistatushigh'), sdrHigh < cv67High);
+
+  // ---- akurasi ----
+  const accLow = (low.avg*100)/stdLow;
+  const accHigh = (high.avg*100)/stdHigh;
+  document.getElementById('r-acclow').textContent = fmt2(accLow,2)+'%';
+  document.getElementById('r-acchigh').textContent = fmt2(accHigh,2)+'%';
+  statusBadge(document.getElementById('r-accstatuslow'), accLow>91 && accLow<111);
+  statusBadge(document.getElementById('r-accstatushigh'), accHigh>91 && accHigh<111);
+
+  // ---- blanko / LOD ----
+  const bl = computeReplicateSet(blanko);
+  fillReplicateTable('#tbl-blanko tbody', bl);
+  document.querySelector('#tbl-blanko [data-f="avg"]').textContent = fmt(bl.avg);
+  document.querySelector('#tbl-blanko [data-f="sumsq"]').textContent = fmt(bl.sumsq);
+  const sdBlanko = Math.sqrt(bl.s2);
+  const estMDL = 5*sdBlanko;
+  document.getElementById('r-sdblanko').textContent = fmt(sdBlanko);
+  document.getElementById('r-estmdl').textContent = fmt(estMDL);
+
+  // ---- spike ----
+  const spikeConc = num(document.getElementById('spike-conc').value);
+  const sp = computeReplicateSet(spike);
+  const recovery = sp.vals.map(v => isNaN(v) ? NaN : (v/spikeConc)*100);
+  fillReplicateTable('#tbl-spike tbody', sp, recovery);
+  document.querySelector('#tbl-spike [data-f="avg"]').textContent = fmt(sp.avg);
+  document.querySelector('#tbl-spike [data-f="sumsq"]').textContent = fmt(sp.sumsq);
+  const validRec = recovery.filter(v=>!isNaN(v));
+  const avgRec = validRec.length? validRec.reduce((a,b)=>a+b,0)/validRec.length : NaN;
+  document.querySelector('#tbl-spike [data-f="avgrec"]').textContent = fmt2(avgRec,2)+'%';
+
+  const sdSpike = Math.sqrt(sp.s2);
+  const MDL = 2.821*sdSpike;
+  const LOQ = 10*MDL;
+  document.getElementById('r-sdspike').textContent = fmt(sdSpike);
+  document.getElementById('r-mdl').textContent = fmt(MDL);
+  document.getElementById('r-loq').textContent = fmt(LOQ);
+
+  // ---- keberterimaan MDL ----
+  const req = num(document.getElementById('mdl-req').value);
+  const avgSpikeMeasured = sp.avg;
+  const SN = avgSpikeMeasured/sdSpike;
+
+  const criteria = [
+    {label:'1. Spike level (10 × MDL > spike)', hasil:LOQ, req:avgSpikeMeasured, reqLabel:fmt(avgSpikeMeasured), ok: LOQ>avgSpikeMeasured},
+    {label:'2. Spike level (MDL < spike)', hasil:MDL, req:avgSpikeMeasured, reqLabel:fmt(avgSpikeMeasured), ok: MDL<avgSpikeMeasured},
+    {label:'3. MDL < Requirement', hasil:MDL, req:req, reqLabel:fmt2(req,3), ok: MDL<req},
+    {label:'4. S/N (rata-rata/SD)', hasil:SN, req:null, reqLabel:'2,5 < S/N < 10', ok: SN>2.5 && SN<10},
+    {label:'5. Recovery', hasil:avgRec, req:null, reqLabel:'85% – 115%', ok: avgRec>84 && avgRec<116, isPct:true},
+  ];
+  const tb = document.querySelector('#tbl-criteria tbody');
+  tb.innerHTML='';
+  criteria.forEach(c=>{
+    const tr=document.createElement('tr');
+    const hasilTxt = c.isPct ? fmt2(c.hasil,2)+'%' : fmt(c.hasil);
+    const statusHtml = `<span class="status ${c.ok?'ok':'bad'}">${c.ok?'OK':'NOT OK'}</span>`;
+    tr.innerHTML = `<td>${c.label}</td><td class="calc">${hasilTxt}</td><td>${c.reqLabel}</td><td>${statusHtml}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function fillReplicateTable(bodySel, result, recoveryArr){
+  const tb = document.querySelector(bodySel);
+  const trs = tb.querySelectorAll('tr');
+  trs.forEach((tr,i)=>{
+    const devCell = tr.querySelector('td[data-field="dev"]');
+    const devsqCell = tr.querySelector('td[data-field="devsq"]');
+    const recCell = tr.querySelector('td[data-field="rec"]');
+    if(devCell) devCell.textContent = isNaN(result.devs[i])? '—' : fmt(result.devs[i]);
+    if(devsqCell) devsqCell.textContent = isNaN(result.devsq[i])? '—' : fmt(result.devsq[i]);
+    if(recCell && recoveryArr) recCell.textContent = isNaN(recoveryArr[i]) ? '—' : fmt2(recoveryArr[i],2)+'%';
+  });
+}
+
+// ---------- direct PDF download (no print dialog) ----------
+async function downloadPDF(){
+  const btn = document.getElementById('btn-pdf');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Menyiapkan PDF…';
+  document.body.classList.add('pdf-exporting');
+  await new Promise(r=>setTimeout(r, 50)); // let layout settle
+
+  try{
+    const target = document.querySelector('.wrap');
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      backgroundColor: '#f3efe4',
+      useCORS: true
+    });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    pdf.save('verifikasi-metode-analisis.pdf');
+  } catch(err){
+    console.error(err);
+    alert('Gagal membuat PDF: ' + err.message);
+  } finally {
+    document.body.classList.remove('pdf-exporting');
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
+function resetAll(){
+  initState();
+  initTables();
+  recalc();
+}
+
+recalc();
+</script>
+</body>
+</html>
