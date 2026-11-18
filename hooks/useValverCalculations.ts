@@ -57,7 +57,6 @@ export function useValverCalculations() {
 
   const [stdRendah, setStdRendah] = useState<string>("0.2");
   const [stdTinggi, setStdTinggi] = useState<string>("10");
-  const [spikeNominal, setSpikeNominal] = useState<string>("4");
   const [mdlRequirement, setMdlRequirement] = useState<string>("0.05");
 
   const [idFields, setIdFields] = useSessionStorage<{ nama: string; nis: string; kelas: string }>("valver-id-fields", {
@@ -229,7 +228,6 @@ export function useValverCalculations() {
     setSpike(Array.from({ length: 10 }, () => ({ abs: "", ppm: "" })));
     setStdRendah("0.2");
     setStdTinggi("10");
-    setSpikeNominal("4");
     setMdlRequirement("0.05");
     setIdFields({ nama: "", nis: "", kelas: "" });
   }, [setIdFields]);
@@ -246,7 +244,6 @@ export function useValverCalculations() {
     stdTinggi,
     setStdTinggi,
     spikeNominal: effectiveSpikeNominal,
-    setSpikeNominal,
     mdlRequirement,
     setMdlRequirement,
     idFields,

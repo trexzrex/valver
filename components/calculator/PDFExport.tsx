@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { CircleNotch, FileArrowDown } from "@phosphor-icons/react";
+import { statusLabels, safeRatio } from "@/lib/calculationStatus";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
@@ -99,9 +100,9 @@ export function PDFExportButton({
       };
 
       const text = (value: unknown, decimals = 6) => {
-        if (value === null || value === undefined) return "-";
+        if (value === null || value === undefined || value === "") return "-";
         const numeric = typeof value === "number" ? value : Number(value);
-        return Number.isFinite(numeric) ? formatNumber(numeric, decimals) : String(value);
+        return Number.isFinite(numeric) ? formatNumber(numeric, decimals) : typeof value === "number" ? "-" : String(value);
       };
       const rowValues = (rows: Array<Record<string, number>>, keys: string[]) => rows.map((row, index) => [String(index + 1), ...keys.map((key) => text(row[key]))]);
       const sum = (values: Array<number | null | undefined>) => values.filter((value): value is number => Number.isFinite(value)).reduce((total, value) => total + value, 0);
@@ -150,11 +151,11 @@ export function PDFExportButton({
       section("Perhitungan S²");
       table(["Parameter", "Nilai"], [["S² Standar Rendah", text(lowResult.s2, 8)], ["S² Standar Tinggi", text(highResult.s2, 8)]]);
       section("Uji Kesetaraan Working Range");
-      table(["Parameter", "Nilai"], [["PG", text(highResult.s2 / lowResult.s2)], ["F tabel", "5.18"], ["Status", highResult.s2 / lowResult.s2 < 5.18 ? "OK" : "NOT OK"]]);
+      table(["Parameter", "Nilai"], [["PG", text(acceptance.workingRange.pg)], ["F tabel", "5.18"], ["Status", statusLabels[acceptance.workingRange.status]]]);
       section("Perhitungan Presisi");
-      table(["Parameter", "Standar Rendah", "Standar Tinggi"], [["SD", text(precision.sdLow, 8), text(precision.sdHigh, 8)], ["SDR", text(precision.sdrLow, 3), text(precision.sdrHigh, 3)], ["CV Horwitz", text(precision.cvLow, 3), text(precision.cvHigh, 3)], ["0.67 x CV Horwitz", text(precision.cv67Low, 3), text(precision.cv67High, 3)], ["Status", precision.precisionLowOK ? "OK" : "NOT OK", precision.precisionHighOK ? "OK" : "NOT OK"]]);
+      table(["Parameter", "Standar Rendah", "Standar Tinggi"], [["SD", text(precision.sdLow, 8), text(precision.sdHigh, 8)], ["SDR", text(precision.sdrLow, 3), text(precision.sdrHigh, 3)], ["CV Horwitz", text(precision.cvLow, 3), text(precision.cvHigh, 3)], ["0.67 x CV Horwitz", text(precision.cv67Low, 3), text(precision.cv67High, 3)], ["Status", statusLabels[precision.statusLow], statusLabels[precision.statusHigh]]]);
       section("Perhitungan Akurasi");
-      table(["Parameter", "Standar Rendah", "Standar Tinggi"], [["% Akurasi", text(accuracyLow.accuracy, 2), text(accuracyHigh.accuracy, 2)], ["Status", accuracyLow.isOK ? "OK" : "NOT OK", accuracyHigh.isOK ? "OK" : "NOT OK"]]);
+      table(["Parameter", "Standar Rendah", "Standar Tinggi"], [["% Akurasi", text(accuracyLow.accuracy, 2), text(accuracyHigh.accuracy, 2)], ["Status", statusLabels[accuracyLow.status], statusLabels[accuracyHigh.status]]]);
 
       section("4. Limit Deteksi (Blanko)");
       table(["No", "Absorban", "ppm (x)", "x - x rata-rata", "(x - x rata-rata)^2"], replicateRows(blankoRows, blankoResult));
@@ -166,10 +167,10 @@ export function PDFExportButton({
         ["Σ", text(sum(spikeRows.map((row) => Number(row.abs)))), text(sum(spikeResult.vals)), text(sum(spikeResult.devs)), text(spikeResult.sumsq), text(sum(spikeResult.computedRows.map((row) => row.recovery)))],
         ["Rata Rata", text(average(spikeRows.map((row) => Number(row.abs)))), text(spikeResult.avg), text(average(spikeResult.devs)), text(average(spikeResult.devsq)), text(average(spikeResult.computedRows.map((row) => row.recovery)))],
       ]);
-      table(["Hasil", "Nilai"], [["Spike Nominal", text(spikeNominal)], ["SD Spike", text(spikeResult.s2 ** 0.5)], ["Recovery", text(mdl.recovery)], ["MDL = 2,821 × SD", text(mdl.mdlSpike)], ["LOQ = 10 × MDL", text(mdl.loqSpike)], ["S/N Ratio", text(spikeResult.avg / (spikeResult.s2 ** 0.5))]]);
+      table(["Hasil", "Nilai"], [["Spike Nominal", text(spikeNominal)], ["SD Spike", text(spikeResult.s2 ** 0.5)], ["Recovery", text(mdl.recovery)], ["MDL = 2,821 × SD", text(mdl.mdlSpike)], ["LOQ = 10 × MDL", text(mdl.loqSpike)], ["S/N Ratio", text(safeRatio(spikeResult.avg, Math.sqrt(spikeResult.s2)))]]);
 
       section("6. Uji Keberterimaan");
-      table(["Kriteria", "Hasil", "Requirement", "Status"], (acceptanceItems ?? []).map((item) => [item.label, item.hasil, item.requirement, item.isOK ? "OK" : "NOT OK"]));
+      table(["Kriteria", "Hasil", "Requirement", "Status"], (acceptanceItems ?? []).map((item) => [item.label, item.hasil, item.requirement, statusLabels[item.status]]));
       pdf.save(`Valver_Report_${new Date().toISOString().split("T")[0]}.pdf`);
       setNotification("success");
       window.setTimeout(() => setNotification(null), 5000);

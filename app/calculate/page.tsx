@@ -9,6 +9,9 @@ import { KalibrasiTable } from "@/components/calculator/KalibrasiTable";
 import { WorkingRangeTable } from "@/components/calculator/WorkingRangeTable";
 import { BlankoTable } from "@/components/calculator/BlankoTable";
 import { SpikeTable } from "@/components/calculator/SpikeTable";
+import { SpikeNominalDisplay } from "@/components/calculator/SpikeNominalDisplay";
+import { CalculationStatusBadge } from "@/components/calculator/CalculationStatusBadge";
+import { safeRatio } from "@/lib/calculationStatus";
 import { AcceptanceCriteriaPanel } from "@/components/calculator/AcceptanceCriteria";
 import { CalibrationChart } from "@/components/calculator/CalibrationChart";
 import { KorelasiSection } from "@/components/calculator/KorelasiSection";
@@ -50,7 +53,6 @@ export default function CalculatePage() {
     stdTinggi,
     setStdTinggi,
     spikeNominal,
-    setSpikeNominal,
     mdlRequirement,
     setMdlRequirement,
     idFields,
@@ -97,6 +99,7 @@ export default function CalculatePage() {
   }, [kalibrasi, wrLow, wrHigh, blanko, spike]);
 
   const allValid = calibration && lowResult.n >= 2 && highResult.n >= 2;
+  const enteredCalibrationRows = kalibrasi.filter((row) => row.x.trim() !== "" && row.y.trim() !== "").length;
 
   return (
     <>
@@ -282,7 +285,7 @@ export default function CalculatePage() {
                   style={{ background: "var(--surface-muted)", borderColor: "var(--border-default)" }}
                 >
                   <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
-                    <SettingInput label="Spike Nominal (ppm)" value={spikeNominal} onChange={setSpikeNominal} />
+                    <SpikeNominalDisplay value={spikeNominal} />
                     <SettingInput label="MDL Requirement" value={mdlRequirement} onChange={setMdlRequirement} />
                   </div>
                 </motion.div>
@@ -342,7 +345,9 @@ export default function CalculatePage() {
                             style={{ borderColor: "var(--accent)", background: "var(--accent-muted)" }}
                           >
                             <p className="text-sm" style={{ color: "var(--accent)" }}>
-                              Minimal 2 titik data valid. Gunakan rentang konsentrasi yang mencakup area kerja metode.
+                              {!calibration && enteredCalibrationRows >= 2
+                                ? "Tidak dapat dihitung: periksa angka, variasi konsentrasi dan absorbansi, serta slope yang tidak boleh nol."
+                                : "Minimal 2 titik data valid. Gunakan rentang konsentrasi yang mencakup area kerja metode."}
                             </p>
                           </motion.div>
                         </div>
@@ -437,7 +442,7 @@ export default function CalculatePage() {
                             <div className="flex min-w-0 flex-col justify-center rounded-lg border p-3" style={{ borderColor: "var(--border-default)", background: "var(--surface-muted)" }}>
                               <div className="mb-1 text-[10px]" style={{ color: "var(--text-muted)" }}>Status</div>
                               <div className="break-words text-sm font-semibold" style={Number.isFinite(lowResult.s2) && Number.isFinite(highResult.s2) && lowResult.s2 !== 0 && highResult.s2 / lowResult.s2 < 5.18 ? { color: "#22c55e" } : { color: "#ef4444" }}>
-                                {Number.isFinite(lowResult.s2) && Number.isFinite(highResult.s2) && lowResult.s2 !== 0 && highResult.s2 / lowResult.s2 < 5.18 ? "OK" : "NOT OK"}
+                                <CalculationStatusBadge status={acceptance.workingRange.status} />
                               </div>
                             </div>
                           </div>
@@ -460,8 +465,8 @@ export default function CalculatePage() {
                                   <StatCard label="CV Horwitz" value={Number.isFinite(precision.cvLow) ? precision.cvLow.toFixed(3) : "-"} />
                                   <StatCard label="0.67 × CV Horwitz" value={Number.isFinite(precision.cv67Low) ? precision.cv67Low.toFixed(3) : "-"} />
                                 </div>
-                                <div className="rounded-lg px-3 py-2 text-center text-sm font-semibold" style={precision.precisionLowOK ? { background: "rgba(34, 197, 94, 0.2)", color: "#22c55e" } : { background: "rgba(239, 68, 68, 0.2)", color: "#ef4444" }}>
-                                  {precision.precisionLowOK ? "OK" : "NOT OK"}
+                                <div className="text-center">
+                                  <CalculationStatusBadge status={precision.statusLow} />
                                 </div>
                               </div>
                               <div className="space-y-3">
@@ -472,8 +477,8 @@ export default function CalculatePage() {
                                   <StatCard label="CV Horwitz" value={Number.isFinite(precision.cvHigh) ? precision.cvHigh.toFixed(3) : "-"} />
                                   <StatCard label="0.67 × CV Horwitz" value={Number.isFinite(precision.cv67High) ? precision.cv67High.toFixed(3) : "-"} />
                                 </div>
-                                <div className="rounded-lg px-3 py-2 text-center text-sm font-semibold" style={precision.precisionHighOK ? { background: "rgba(34, 197, 94, 0.2)", color: "#22c55e" } : { background: "rgba(239, 68, 68, 0.2)", color: "#ef4444" }}>
-                                  {precision.precisionHighOK ? "OK" : "NOT OK"}
+                                <div className="text-center">
+                                  <CalculationStatusBadge status={precision.statusHigh} />
                                 </div>
                               </div>
                             </div>
@@ -497,15 +502,15 @@ export default function CalculatePage() {
                               <div className="space-y-3">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: "var(--text-muted)" }}>Standar Rendah</h4>
                                 <StatCard label="% Akurasi" value={Number.isFinite(accuracyLow.accuracy) ? `${accuracyLow.accuracy.toFixed(2)}%` : "-"} />
-                                <div className="rounded-lg px-3 py-2 text-center text-sm font-semibold" style={accuracyLow.isOK ? { background: "rgba(34, 197, 94, 0.2)", color: "#22c55e" } : { background: "rgba(239, 68, 68, 0.2)", color: "#ef4444" }}>
-                                  {accuracyLow.isOK ? "OK (91-111%)" : "NOT OK"}
+                                <div className="text-center">
+                                  <CalculationStatusBadge status={accuracyLow.status} />
                                 </div>
                               </div>
                               <div className="space-y-3">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: "var(--text-muted)" }}>Standar Tinggi</h4>
                                 <StatCard label="% Akurasi" value={Number.isFinite(accuracyHigh.accuracy) ? `${accuracyHigh.accuracy.toFixed(2)}%` : "-"} />
-                                <div className="rounded-lg px-3 py-2 text-center text-sm font-semibold" style={accuracyHigh.isOK ? { background: "rgba(34, 197, 94, 0.2)", color: "#22c55e" } : { background: "rgba(239, 68, 68, 0.2)", color: "#ef4444" }}>
-                                  {accuracyHigh.isOK ? "OK (91-111%)" : "NOT OK"}
+                                <div className="text-center">
+                                  <CalculationStatusBadge status={accuracyHigh.status} />
                                 </div>
                               </div>
                             </div>
@@ -545,7 +550,7 @@ export default function CalculatePage() {
                           mdlSpike={mdl.mdlSpike}
                           loqSpike={mdl.loqSpike}
                           recovery={mdl.recovery}
-                          snRatio={spikeResult.avg && spikeResult.s2 ? spikeResult.avg / Math.sqrt(spikeResult.s2) : NaN}
+                          snRatio={safeRatio(spikeResult.avg, Math.sqrt(spikeResult.s2))}
                           avgRecovery={spikeResult.avg && spikeNominal ? (spikeResult.avg / parseFloat(spikeNominal)) * 100 : undefined}
                           dataRef={spikeRef}
                           onDataChange={() => setSpike([...spikeRef.current])}
