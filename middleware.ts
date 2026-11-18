@@ -1,25 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-const protectedRoutes = ["/calculate"];
-const publicRoutes = ["/", "/input"];
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/server/session";
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get("valver_session");
-
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route + "/"));
-
-  if (isProtectedRoute && !sessionCookie) {
-    const loginUrl = new URL("/input", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+  if (request.nextUrl.pathname === "/") {
+    const response = NextResponse.next();
+    response.cookies.delete(SESSION_COOKIE);
+    return response;
   }
-
+  const valid = verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value, process.env.VALVER_SESSION_SECRET ?? "");
+  if (!valid) {
+    const response = NextResponse.redirect(new URL("/input", request.url));
+    response.cookies.delete(SESSION_COOKIE);
+    return response;
+  }
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/calculate/:path*", "/input"],
+  matcher: ["/", "/calculate/:path*"],
+  runtime: "nodejs",
 };

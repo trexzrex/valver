@@ -49,7 +49,6 @@ export default function InputPage() {
         throw new Error(result.error || "Gagal menyimpan data");
       }
 
-      document.cookie = `valver_session=${result.data.id}; path=/; max-age=86400; SameSite=Lax`;
       router.push("/calculate");
       router.refresh();
     } catch (error) {
@@ -149,6 +148,7 @@ export default function InputPage() {
                 name="nama"
                 inputMode="text"
                 autoComplete="name"
+                maxLength={100}
                 value={formData.nama}
                 onChange={handleChange}
                 placeholder="Masukkan nama lengkap"
@@ -234,6 +234,7 @@ export default function InputPage() {
                 type="text"
                 id="kelas"
                 name="kelas"
+                maxLength={50}
                 inputMode="text"
                 autoComplete="off"
                 value={formData.kelas}
