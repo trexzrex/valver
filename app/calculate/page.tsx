@@ -104,7 +104,7 @@ export default function CalculatePage() {
   return (
     <>
       <DisableZoom />
-      <DraftNotice draft={draft} />
+      <DraftNotice draft={draft} mode="recovery" />
       {showDisclaimer && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 backdrop-blur-sm" style={{ background: "rgba(0, 0, 0, 0.8)" }}>
           <motion.div
@@ -248,6 +248,7 @@ export default function CalculatePage() {
         <div className="flex min-w-0 w-full">
           {/* Main Content */}
           <div className="w-full min-w-0" ref={mainContentRef}>
+            <DraftNotice draft={draft} />
             {/* Reset Button - moved above tables */}
             <div className="mb-4 flex justify-end">
               <button type="button" onClick={draft.clear} disabled={draft.status === "loading" || draft.status === "choice" || draft.status === "blocked"} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-50" style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}>Reset perhitungan</button>

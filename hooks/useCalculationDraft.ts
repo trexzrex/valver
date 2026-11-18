@@ -52,7 +52,7 @@ export function useCalculationDraft(inputs: DraftInputs, restore: (data: DraftIn
         } else {
           if (raw) {
             localStorage.removeItem(DRAFT_KEY);
-            setMessage(parsed && "reason" in parsed && parsed.reason === "expired" ? "Draft lebih dari 7 hari telah dihapus." : "Draft tidak dapat dibaca dan telah dihapus.");
+            setMessage(parsed && "reason" in parsed && parsed.reason === "expired" ? "Draft berumur 3 hari atau lebih telah dihapus." : "Draft tidak dapat dibaca dan telah dihapus.");
           }
           active.current = true;
           setStatus("ready");

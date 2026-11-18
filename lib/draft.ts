@@ -1,7 +1,7 @@
 import type { KalibrasiRow, ReplicateRow, SpikeRow } from "./types";
 
 export const DRAFT_KEY = "valver-draft-v1";
-export const DRAFT_TTL = 7 * 24 * 60 * 60 * 1000;
+export const DRAFT_TTL = 3 * 24 * 60 * 60 * 1000;
 export interface DraftInputs {
   kalibrasi: KalibrasiRow[];
   wrLow: ReplicateRow[];

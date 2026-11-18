@@ -4,7 +4,7 @@ Satu draft lokal disimpan pada `valver-draft-v1` di localStorage setelah perubah
 
 Saat kalkulator dibuka kembali, pengguna memilih Lanjutkan draft atau Mulai baru. Form identitas tidak menghapus draft. Sesi akses tetap wajib valid dan identitas laporan harus diperiksa kembali oleh pengguna. Draft bukan bukti kepemilikan; pengguna lain pada profil browser yang sama bisa mengaksesnya.
 
-Draft kedaluwarsa 7 hari setelah perubahan terakhir dan dihapus saat pembukaan berikutnya. Reset perhitungan / Hapus draft memerlukan konfirmasi, membatalkan simpan tertunda, menghapus draft, dan mengembalikan input default tanpa menghapus identitas laporan. Draft kosong tidak langsung dibuat lagi.
+Draft kedaluwarsa 3 hari setelah perubahan terakhir dan dihapus saat pembukaan berikutnya. Reset perhitungan / Hapus draft memerlukan konfirmasi, membatalkan simpan tertunda, menghapus draft, dan mengembalikan input default tanpa menghapus identitas laporan. Draft kosong tidak langsung dibuat lagi.
 
 Web Locks mengunci satu editor per origin. Tab kedua diblokir sampai tab pertama ditutup dan tab kedua dimuat ulang. Penguncian dilepas otomatis ketika dokumen ditutup. Fitur ini memerlukan browser yang mendukung Web Locks serta secure context (HTTPS atau localhost). Jika tidak tersedia atau storage diblokir, kalkulator tetap dapat digunakan tanpa autosave dan menampilkan peringatan.
 

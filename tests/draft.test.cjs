@@ -13,6 +13,8 @@ test('draft round trips inputs but excludes identity and results', () => {
 test('expired, future, corrupt, wrong version and malformed drafts are rejected', () => {
   const { createDraft, parseDraft, defaultInputs, DRAFT_TTL } = draft();
   const saved = createDraft(defaultInputs(), 1000);
+  assert.equal(DRAFT_TTL, 3 * 24 * 60 * 60 * 1000);
+  assert.ok('data' in parseDraft(JSON.stringify(saved), 1000 + DRAFT_TTL - 1));
   assert.equal(parseDraft(JSON.stringify(saved), 1000 + DRAFT_TTL).reason, 'expired');
   assert.equal(parseDraft(JSON.stringify(saved), 999).reason, 'invalid');
   assert.equal(parseDraft('{', 1001).reason, 'invalid');
