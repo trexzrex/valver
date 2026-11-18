@@ -18,7 +18,7 @@ import { KorelasiSection } from "@/components/calculator/KorelasiSection";
 import { LinearTable } from "@/components/calculator/LinearTable";
 import { DisableZoom } from "@/components/DisableZoom";
 import { FooterActions } from "@/components/FooterActions";
-import { ResetButton } from "@/components/ResetButton";
+import { DraftNotice } from "@/components/calculator/DraftNotice";
 import { KalibrasiRow, ReplicateRow, SpikeRow } from "@/lib/types";
 import { PDFExportButton } from "@/components/calculator/PDFExport";
 import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
@@ -87,7 +87,7 @@ export default function CalculatePage() {
     setWrHigh,
     setBlanko,
     setSpike,
-    resetAll,
+    draft,
   } = useValverCalculations();
 
   useEffect(() => {
@@ -104,6 +104,7 @@ export default function CalculatePage() {
   return (
     <>
       <DisableZoom />
+      <DraftNotice draft={draft} />
       {showDisclaimer && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 backdrop-blur-sm" style={{ background: "rgba(0, 0, 0, 0.8)" }}>
           <motion.div
@@ -136,7 +137,7 @@ export default function CalculatePage() {
           </motion.div>
         </div>
       )}
-      <div className="calculate-page min-h-[100dvh] overflow-x-hidden" style={{ background: "var(--surface)" }}>
+      <div inert={draft.status === "loading" || draft.status === "choice" || draft.status === "blocked"} className="calculate-page min-h-[100dvh] overflow-x-hidden" style={{ background: "var(--surface)" }}>
         <div className="calculate-atmosphere" aria-hidden="true">
           <span className="calculate-orb calculate-orb-one" />
           <span className="calculate-orb calculate-orb-two" />
@@ -249,7 +250,7 @@ export default function CalculatePage() {
           <div className="w-full min-w-0" ref={mainContentRef}>
             {/* Reset Button - moved above tables */}
             <div className="mb-4 flex justify-end">
-              <ResetButton onReset={resetAll} />
+              <button type="button" onClick={draft.clear} disabled={draft.status === "loading" || draft.status === "choice" || draft.status === "blocked"} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-50" style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}>Reset perhitungan</button>
             </div>
 
             {/* Section Header */}

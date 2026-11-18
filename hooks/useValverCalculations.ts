@@ -31,6 +31,8 @@ import {
   generateCalibrationCurvePoints,
 } from "@/lib/calculations";
 import { useSessionStorage } from "./useSessionStorage";
+import { useCalculationDraft } from "./useCalculationDraft";
+import type { DraftInputs } from "@/lib/draft";
 
 function num(v: string): number {
   if (v === "" || v === null || v === undefined) return NaN;
@@ -64,6 +66,19 @@ export function useValverCalculations() {
     nis: "",
     kelas: "",
   });
+
+  const draftInputs = useMemo(() => ({ kalibrasi, wrLow, wrHigh, blanko, spike, stdRendah, stdTinggi, mdlRequirement }), [kalibrasi, wrLow, wrHigh, blanko, spike, stdRendah, stdTinggi, mdlRequirement]);
+  const restoreInputs = useCallback((data: DraftInputs) => {
+    setKalibrasi(data.kalibrasi);
+    setWrLow(data.wrLow);
+    setWrHigh(data.wrHigh);
+    setBlanko(data.blanko);
+    setSpike(data.spike);
+    setStdRendah(data.stdRendah);
+    setStdTinggi(data.stdTinggi);
+    setMdlRequirement(data.mdlRequirement);
+  }, []);
+  const draft = useCalculationDraft(draftInputs, restoreInputs);
 
   const calibration = useMemo(() => computeCalibration(kalibrasi), [kalibrasi]);
 
@@ -233,6 +248,7 @@ export function useValverCalculations() {
   }, [setIdFields]);
 
   return {
+    draft,
     kalibrasi,
     setKalibrasi,
     wrLow,
