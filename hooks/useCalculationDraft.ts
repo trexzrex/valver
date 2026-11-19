@@ -10,6 +10,7 @@ export function useCalculationDraft(inputs: DraftInputs, restore: (data: DraftIn
   const [message, setMessage] = useState("");
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [clearRequested, setClearRequested] = useState(false);
   const current = useRef(inputs);
   const baseline = useRef(JSON.stringify(inputs));
   const active = useRef(false);
@@ -62,20 +63,20 @@ export function useCalculationDraft(inputs: DraftInputs, restore: (data: DraftIn
         setMessage("Autosave tidak tersedia. Input masih dapat digunakan selama halaman terbuka.");
       }
     };
-    if (!navigator.locks) {
-      setStatus("unavailable");
-      setMessage("Browser/alamat ini tidak mendukung penguncian draft. Gunakan HTTPS atau localhost untuk autosave yang aman.");
-    } else {
-      // Defer acquisition so React Strict Mode's discarded setup never holds a lock.
-      queueMicrotask(() => {
+    // Defer initialization so Strict Mode's discarded setup cannot update state or hold a lock.
+    queueMicrotask(() => {
+      if (disposed) return;
+      if (!navigator.locks) {
+        setStatus("unavailable");
+        setMessage("Browser/alamat ini tidak mendukung penguncian draft. Gunakan HTTPS atau localhost untuk autosave yang aman.");
+        return;
+      }
+      void navigator.locks.request("valver-draft-editor", { ifAvailable: true }, async lock => {
         if (disposed) return;
-        void navigator.locks.request("valver-draft-editor", { ifAvailable: true }, async lock => {
-          if (disposed) return;
-          if (!lock) { setStatus("blocked"); return; }
-          await new Promise<void>(resolve => { release = resolve; initialize(); });
-        }).catch(() => { if (!disposed) { setStatus("unavailable"); setMessage("Autosave tidak dapat diaktifkan pada browser ini."); } });
-      });
-    }
+        if (!lock) { setStatus("blocked"); return; }
+        await new Promise<void>(resolve => { release = resolve; initialize(); });
+      }).catch(() => { if (!disposed) { setStatus("unavailable"); setMessage("Autosave tidak dapat diaktifkan pada browser ini."); } });
+    });
     const onHide = () => { if (document.visibilityState === "hidden") flush(); };
     document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", flush);
@@ -109,7 +110,13 @@ export function useCalculationDraft(inputs: DraftInputs, restore: (data: DraftIn
     setStatus("ready");
   };
   const clear = () => {
-    if (!window.confirm("Hapus seluruh input perhitungan dan draft dari perangkat ini?")) return;
+    if (status === "loading" || status === "blocked") return;
+    setClearRequested(true);
+  };
+  const cancelClear = () => setClearRequested(false);
+  const confirmClear = () => {
+    if (!clearRequested || status === "loading" || status === "blocked") return;
+    setClearRequested(false);
     if (timer.current) clearTimeout(timer.current);
     active.current = false;
     try { localStorage.removeItem(DRAFT_KEY); }
@@ -124,5 +131,5 @@ export function useCalculationDraft(inputs: DraftInputs, restore: (data: DraftIn
     setMessage("Input dan draft perhitungan telah dihapus.");
     if (status !== "unavailable") { active.current = true; setStatus("ready"); }
   };
-  return { status, candidate, message, savedAt, saving, resume, clear };
+  return { status, candidate, message, savedAt, saving, resume, clear, clearRequested, cancelClear, confirmClear };
 }

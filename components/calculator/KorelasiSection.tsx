@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import { EditableTable, Column } from "./EditableTable";
 import { Korelasi1Row, Korelasi2Row } from "@/lib/types";
 import { formatNumber, formatNumberFixed } from "@/lib/utils/numberFormat";
+import { buildCalibrationSteps, type CalibrationStep } from "@/lib/calibrationSteps";
+import { MathFormula } from "@/components/calculator/MathFormula";
 import { CaretDown } from "@phosphor-icons/react";
 import { useState } from "react";
 
@@ -33,6 +35,10 @@ export function KorelasiSection({ korelasiCara1, korelasiCara2, calibration }: K
       </motion.div>
     );
   }
+
+  const correlationSteps = buildCalibrationSteps(calibration);
+  const cara1Step = correlationSteps.find((step) => step.id === "r1");
+  const cara2Step = correlationSteps.find((step) => step.id === "r2");
 
   const columnsCara1: Column<Korelasi1Row>[] = [
     {
@@ -188,6 +194,7 @@ export function KorelasiSection({ korelasiCara1, korelasiCara2, calibration }: K
                 </>
               }
             />
+            {cara1Step && <CorrelationCalculation step={cara1Step} />}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -260,6 +267,7 @@ export function KorelasiSection({ korelasiCara1, korelasiCara2, calibration }: K
                   </>
                 }
               />
+              {cara2Step && <CorrelationCalculation step={cara2Step} />}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -275,6 +283,17 @@ export function KorelasiSection({ korelasiCara1, korelasiCara2, calibration }: K
           )}
         </motion.div>
       </motion.div>
+  );
+}
+
+function CorrelationCalculation({ step }: { step: CalibrationStep }) {
+  return (
+    <div className="mt-5 min-w-0 space-y-4">
+      <p className="text-xs leading-5" style={{ color: "var(--text-secondary)" }}>Substitusi menggunakan jumlah pada tabel di atas. Angka tampilan dibulatkan hingga 8 digit signifikan; hasil dihitung dengan presisi penuh.</p>
+      <div><p className="mb-2 text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>1. Rumus umum</p><MathFormula latex={step.formulaLatex} label={`Rumus umum ${step.label}`} /></div>
+      <div><p className="mb-2 text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>2. Substitusi angka</p><MathFormula latex={step.substitutionLatex} label={`Substitusi angka ${step.label}`} /></div>
+      <div style={{ color: "var(--accent)" }}><p className="mb-2 text-xs font-semibold">3. Hasil akhir</p><MathFormula latex={step.resultLatex} label={`Hasil akhir ${step.label}`} /></div>
+    </div>
   );
 }
 

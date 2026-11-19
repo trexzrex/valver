@@ -1,160 +1,94 @@
 ﻿"use client";
 
-import {
-  LineChart,
-  Line,
-  Scatter,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { ComposedChart, Line, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion } from "motion/react";
-import { CalibrationResult } from "@/lib/types";
-import { formatNumber, formatNumberFixed } from "@/lib/utils/numberFormat";
+import type { CalibrationResult } from "@/lib/types";
+import { buildCalibrationPlot, formatChartTick } from "@/lib/calibrationPlot";
+import { formatStepNumber } from "@/lib/calibrationSteps";
 
 interface CalibrationChartProps {
-  calibration: ReturnType<typeof import("@/lib/calculations").computeCalibration> | null;
+  calibration: CalibrationResult | null;
   className?: string;
 }
 
 export function CalibrationChart({ calibration, className = "" }: CalibrationChartProps) {
-  if (!calibration || calibration.validRows.length < 2) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className={`h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] rounded-xl border flex items-center justify-center ${className}`}
-        style={{ background: "var(--surface-muted)", borderColor: "var(--border-default)" }}
-      >
-        <div className="text-center" style={{ color: "var(--text-muted)" }}>
-          <p className="text-lg font-medium mb-2">Kurva Kalibrasi</p>
-          <p className="text-sm">Masukkan minimal 2 titik data valid pada tabel kurva kalibrasi</p>
-        </div>
-      </motion.div>
-    );
-  }
-
-  const dataPoints = calibration.validRows.map((r, i) => ({
-    x: r.x,
-    y: r.y,
-    name: `Titik ${i + 1}`,
-  }));
-
-  // Regression line only spans the actual data range (minX to maxX)
-  const allX = calibration.validRows.map((r) => r.x);
-  const minX = Math.min(...allX);
-  const maxX = Math.max(...allX);
-
-  const lineData = [
-    { x: minX, y: calibration.A + calibration.B * minX },
-    { x: maxX, y: calibration.A + calibration.B * maxX },
-  ];
-
-  const padding = (maxX - minX) * 0.1 || 1;
-
-  const formatID = (val: number) => val.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-
+  const plot = buildCalibrationPlot(calibration);
+  const f = formatStepNumber;
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`rounded-xl border p-4 ${className}`}
-      style={{ background: "var(--surface-muted)", borderColor: "var(--border-default)" }}
-    >
-      <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
-        <h3 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>Kurva Kalibrasi</h3>
-        <div className="flex items-center gap-4 text-sm flex-wrap" style={{ color: "var(--text-secondary)" }}>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full" style={{ background: "var(--accent)" }} />
-            Data Pengukuran
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-6 h-0.5" style={{ background: "var(--accent)" }} />
-            Regresi: y = {formatNumberFixed(calibration.B, 4)}x {calibration.A >= 0 ? '+' : '−'} {formatNumberFixed(Math.abs(calibration.A), 4)}
-          </span>
-          <span
-            className="px-2 py-0.5 rounded font-mono text-xs"
-            style={{ background: "var(--accent-muted)", color: "var(--accent)" }}
-          >
-            R = {calibration.R1.toFixed(6)}
-          </span>
+    <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+      aria-label="Grafik kurva kalibrasi" className={`min-w-0 overflow-hidden rounded-2xl border ${className}`}
+      style={{ background: "var(--surface-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
+      <div className="border-b px-4 py-5 sm:px-6" style={{ borderColor: "var(--border-default)" }}>
+        <h3 className="text-lg font-semibold tracking-tight">Kurva Kalibrasi</h3>
+        <p className="mt-1 text-xs leading-5" style={{ color: "var(--text-secondary)" }}>Konsentrasi terhadap absorbansi</p>
+      </div>
+      {!plot || !calibration ? (
+        <div className="flex min-h-64 items-center justify-center px-6 text-center">
+          <div><p className="font-medium">Grafik menunggu data kalibrasi</p><p className="mx-auto mt-2 max-w-sm text-sm leading-6" style={{ color: "var(--text-secondary)" }}>Lengkapi minimal dua pasangan konsentrasi dan absorbansi yang menghasilkan regresi valid pada tabel di atas.</p></div>
         </div>
-      </div>
-
-      {/* Mobile: horizontal scroll for chart */}
-      <div className="overflow-x-auto sm:overflow-visible -mx-4 px-4 sm:px-0">
-        <ResponsiveContainer width="100%" height={320} minWidth={600}>
-          <LineChart
-            data={dataPoints}
-            margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-            <XAxis
-              dataKey="x"
-              type="number"
-              domain={[minX - padding, maxX + padding]}
-              tick={{ fill: "#71717a", fontSize: 11 }}
-              axisLine={{ stroke: "#27272a" }}
-              tickLine={{ stroke: "#27272a" }}
-              tickFormatter={(value) => formatID(value)}
-              label={{ value: "Konsentrasi (ppm)", position: "insideBottom", offset: -20, fill: "#a1a1aa", fontSize: 11 }}
-            />
-            <YAxis
-              type="number"
-              tick={{ fill: "#71717a", fontSize: 11 }}
-              axisLine={{ stroke: "#27272a" }}
-              tickLine={{ stroke: "#27272a" }}
-              tickFormatter={(value) => formatNumberFixed(value, 4)}
-              label={{ value: "Absorban", angle: -90, position: "insideLeft", offset: 20, fill: "#a1a1aa", fontSize: 11 }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#18181b",
-                border: "1px solid #27272a",
-                borderRadius: "8px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-              }}
-              labelStyle={{ color: "#fafafa" }}
-              itemStyle={{ color: "#22d3ee" }}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              formatter={(value: any, name: any) => {
-                const formattedValue = typeof value === "number" ? formatNumber(value, 6) : (value ?? "-");
-                const formattedName = name ?? "";
-                return [formattedValue, formattedName] as [string, string];
-              }}
-              labelFormatter={(value) => typeof value === "number" ? formatNumberFixed(value, 4) : String(value)}
-            />
-            <Legend
-              wrapperStyle={{ paddingTop: 10 }}
-              iconSize={10}
-              formatter={(value: string) => value}
-            />
-            <Scatter
-              name="Data Pengukuran"
-              data={dataPoints}
-              fill="#22d3ee"
-              shape="circle"
-              r={4}
-            />
-            <Line
-              type="linear"
-              data={lineData}
-              dataKey="y"
-              stroke="#22d3ee"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              dot={false}
-              legendType="line"
-              name={`Regresi: y = ${formatNumberFixed(calibration.B, 4)}x ${calibration.A >= 0 ? '+' : '−'} ${formatNumberFixed(Math.abs(calibration.A), 4)}`}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </motion.div>
+      ) : (
+        <>
+          <dl className="grid grid-cols-3 gap-px border-b" style={{ background: "var(--border-subtle)", borderColor: "var(--border-default)" }}>
+            <div className="col-span-3 px-4 py-4 sm:px-6" style={{ background: "var(--surface-muted)" }}>
+              <dt className="text-xs" style={{ color: "var(--text-secondary)" }}>Persamaan regresi · y = bx + a</dt>
+              <dd className="mt-1 break-words font-mono text-sm font-semibold" style={{ color: "var(--accent)" }}>y = {f(calibration.B)}x {calibration.A < 0 ? "−" : "+"} {f(Math.abs(calibration.A))}</dd>
+            </div>
+            {[{ label: "r", value: f(calibration.R1) }, { label: "R²", value: f(calibration.R1 ** 2) }, { label: "Jumlah titik", value: String(calibration.n) }].map(item => (
+              <div key={item.label} className="min-w-0 px-4 py-3 sm:px-6" style={{ background: "var(--surface-elevated)" }}><dt className="text-xs" style={{ color: "var(--text-secondary)" }}>{item.label}</dt><dd className="mt-1 break-words font-mono text-sm font-semibold">{item.value}</dd></div>
+            ))}
+          </dl>
+          <div className="px-3 pb-4 pt-5 sm:px-5">
+            <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-2 px-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-sky-600" /><span className="w-5 border-t-2 border-sky-600" />S · Sebelum linear (pengukuran)</span>
+              <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rotate-45 border-2 border-orange-600" /><span className="w-5 border-t-2 border-dashed border-orange-600" />P · Sesudah linear (prediksi)</span>
+            </div>
+            <p className="mb-1 px-1 text-xs" style={{ color: "var(--text-secondary)" }}>Absorbansi</p>
+            <div className="h-[280px] min-w-0 w-full sm:h-[330px]">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <ComposedChart margin={{ top: 14, right: 16, left: 0, bottom: 4 }} accessibilityLayer>
+                  <CartesianGrid vertical={false} stroke="var(--border-default)" strokeDasharray="3 5" />
+                  <XAxis dataKey="x" type="number" domain={plot.xDomain} tickCount={4} minTickGap={24} tickFormatter={formatChartTick}
+                    tick={{ fill: "var(--text-secondary)", fontSize: 11 }} tickMargin={10} axisLine={{ stroke: "var(--border-default)" }} tickLine={false} height={36} />
+                  <YAxis dataKey="y" type="number" domain={plot.yDomain} tickCount={5} tickFormatter={formatChartTick} width={58}
+                    tick={{ fill: "var(--text-secondary)", fontSize: 11 }} tickMargin={8} axisLine={false} tickLine={false} />
+                  <Tooltip shared={false} cursor={{ stroke: "var(--border-default)", strokeDasharray: "3 3" }} content={<MeasurementTooltip />} />
+                  <Line data={plot.measuredLine} dataKey="y" type="linear" stroke="#0284c7" strokeWidth={2} dot={false} activeDot={false} tooltipType="none" isAnimationActive={false} name="Penghubung pengukuran" />
+                  <Line data={plot.predictedLine} dataKey="y" type="linear" stroke="#ea580c" strokeWidth={2} strokeDasharray="6 4" dot={false} activeDot={false} tooltipType="none" isAnimationActive={false} name="Garis regresi" />
+                  <Scatter data={[...plot.points, ...plot.predicted]} dataKey="y" name="Pengukuran dan prediksi" shape={<ComparisonMarker />} isAnimationActive={false} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="mt-1 text-center text-xs" style={{ color: "var(--text-secondary)" }}>Konsentrasi (ppm)</p>
+          </div>
+          <p className="border-t px-4 py-3 text-xs leading-5 sm:px-6" style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}>Setiap baris lengkap memiliki titik S (pengukuran) dan P (prediksi). Nomor mengikuti tabel linearitas. Garis biru hanya menghubungkan pengukuran menurut konsentrasi; garis oranye adalah regresi dalam rentang yang diukur. Titik berimpit tetap dipertahankan; sentuh titik untuk melihat baris terkait.</p>
+        </>
+      )}
+    </motion.section>
   );
+}
+
+type PlotPoint = NonNullable<ReturnType<typeof buildCalibrationPlot>>["points"][number] & { measured?: number };
+
+function ComparisonMarker({ cx, cy, payload }: { cx?: number; cy?: number; payload?: PlotPoint }) {
+  if (cx === undefined || cy === undefined || !payload) return <g />;
+  const predicted = payload.label.startsWith("P");
+  const color = predicted ? "#ea580c" : "#0284c7";
+  const labels = payload.overlappingRows.map(row => `${predicted ? "P" : "S"}${row}`).join("/");
+  return <g className={predicted ? "prediction-marker" : "measurement-marker"}>
+    <title>{labels}: x = {payload.x}, y = {payload.y}</title>
+    {predicted ? <path d={`M ${cx} ${cy - 8} L ${cx + 8} ${cy} L ${cx} ${cy + 8} L ${cx - 8} ${cy} Z`} fill="none" stroke={color} strokeWidth={2} /> : <circle cx={cx} cy={cy} r={4} fill={color} stroke="var(--surface-elevated)" strokeWidth={1.5} />}
+    <text x={cx} y={cy + (predicted ? 22 : -13)} textAnchor="middle" fill={color} fontSize={10} fontWeight={600} stroke="var(--surface-elevated)" strokeWidth={3} paintOrder="stroke" pointerEvents="none">{labels}</text>
+  </g>;
+}
+
+function MeasurementTooltip({ active, payload }: { active?: boolean; payload?: ReadonlyArray<{ payload?: PlotPoint }> }) {
+  const point = payload?.find(item => item.payload?.label)?.payload;
+  if (!active || !point) return null;
+  return <div className="max-w-64 rounded-xl border px-4 py-3 text-xs shadow-lg" style={{ background: "var(--surface-elevated)", borderColor: "var(--border-default)", color: "var(--text-primary)" }}>
+    <p className="mb-2 font-semibold">{point.label} · {point.name} · Baris {point.row}</p>
+    <p>Konsentrasi: <span className="font-mono">{formatStepNumber(point.x)} ppm</span></p>
+    <p className="mt-1">Sebelum: <span className="font-mono" style={{ color: "#0284c7" }}>{formatStepNumber(point.measured ?? point.y)}</span></p>
+    <p className="mt-1">Sesudah: <span className="font-mono" style={{ color: "#ea580c" }}>{formatStepNumber(point.predicted)}</span></p>
+    {point.overlappingRows.length > 1 && <p className="mt-2 leading-5" style={{ color: "var(--text-secondary)" }}>Titik berimpit pada seri ini: baris {point.overlappingRows.join(", ")}.</p>}
+  </div>;
 }

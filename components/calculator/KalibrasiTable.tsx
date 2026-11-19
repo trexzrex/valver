@@ -3,8 +3,8 @@
 import { motion } from "motion/react";
 import { EditableTable, Column } from "./EditableTable";
 import { KalibrasiRow } from "@/lib/types";
-import { formatNumber, formatNumberFixed } from "@/lib/utils/numberFormat";
-import { useRef } from "react";
+import { formatNumber } from "@/lib/utils/numberFormat";
+import { CalibrationSteps } from "./CalibrationSteps";
 
 interface KalibrasiTableProps {
   data: KalibrasiRow[];
@@ -130,51 +130,7 @@ export function KalibrasiTable({ data, calibration, onUpdate, onAddRow, onRemove
         }
       />
 
-      {calibration && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mt-4 overflow-x-auto"
-        >
-          <table className="w-full min-w-max text-sm border rounded-xl overflow-hidden" style={{ borderColor: "var(--border-default)" }}>
-            <thead>
-              <tr className="border-b" style={{ background: "var(--surface-elevated)", borderColor: "var(--border-default)" }}>
-                <th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-xs" style={{ color: "var(--text-secondary)" }}>Parameter</th>
-                <th className="px-4 py-3 text-right font-semibold uppercase tracking-wider text-xs" style={{ color: "var(--text-secondary)" }}>Nilai</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>Slope (B)</td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: "var(--text-primary)" }}>{calibration.B.toFixed(6)}</td>
-              </tr>
-              <tr className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>Intercept (A)</td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: "var(--text-primary)" }}>{calibration.A.toFixed(6)}</td>
-              </tr>
-              <tr className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>Persamaan Garis</td>
-                <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: "var(--text-primary)" }}>
-                  y = {calibration.B.toFixed(6)}x {calibration.A >= 0 ? '+' : '−'} {Math.abs(calibration.A).toFixed(6)}
-                </td>
-              </tr>
-              <tr className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>R (Rumus 1)</td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: "var(--text-primary)" }}>{calibration.R1.toFixed(6)}</td>
-              </tr>
-              <tr className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>R (Rumus 2)</td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: "var(--text-primary)" }}>{calibration.R2.toFixed(6)}</td>
-              </tr>
-              <tr className="border-b" style={{ borderColor: "var(--border-subtle)" }}>
-                <td className="px-4 py-3" style={{ color: "var(--text-secondary)" }}>R²</td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: "var(--text-primary)" }}>{(calibration.R1 * calibration.R1).toFixed(6)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </motion.div>
-      )}
+      <CalibrationSteps calibration={calibration} />
     </motion.div>
   );
 }

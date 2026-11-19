@@ -19,6 +19,7 @@ import { LinearTable } from "@/components/calculator/LinearTable";
 import { DisableZoom } from "@/components/DisableZoom";
 import { FooterActions } from "@/components/FooterActions";
 import { DraftNotice } from "@/components/calculator/DraftNotice";
+import { ResetDraftDialog } from "@/components/calculator/ResetDraftDialog";
 import { KalibrasiRow, ReplicateRow, SpikeRow } from "@/lib/types";
 import { PDFExportButton } from "@/components/calculator/PDFExport";
 import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
@@ -105,6 +106,7 @@ export default function CalculatePage() {
     <>
       <DisableZoom />
       <DraftNotice draft={draft} mode="recovery" />
+      <ResetDraftDialog draft={draft} />
       {showDisclaimer && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 backdrop-blur-sm" style={{ background: "rgba(0, 0, 0, 0.8)" }}>
           <motion.div
