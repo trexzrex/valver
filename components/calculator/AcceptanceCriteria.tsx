@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { CheckCircle, XCircle, WarningCircle } from "@phosphor-icons/react";
 import { AcceptanceCriteriaItem } from "@/lib/types";
+import { CalculationStatusBadge } from "./CalculationStatusBadge";
 
 interface AcceptanceCriteriaProps {
   acceptanceItems: AcceptanceCriteriaItem[];
@@ -10,7 +11,8 @@ interface AcceptanceCriteriaProps {
 }
 
 export function AcceptanceCriteriaPanel({ acceptanceItems, mdlRequirement }: AcceptanceCriteriaProps) {
-  const allOK = acceptanceItems.every((item) => item.isOK);
+  const allOK = acceptanceItems.every((item) => item.status === "pass");
+  const pending = acceptanceItems.some((item) => item.status === "incomplete" || item.status === "invalid");
 
   return (
     <motion.div
@@ -31,7 +33,7 @@ export function AcceptanceCriteriaPanel({ acceptanceItems, mdlRequirement }: Acc
           }}
         >
           <span className="font-medium" style={{ color: allOK ? "#22c55e" : "#ef4444" }}>
-            {allOK ? "SEMUA OK" : "ADA NOT OK"}
+            {pending ? "EVALUASI BELUM LENGKAP" : allOK ? "SEMUA OK" : "ADA NOT OK"}
           </span>
           {allOK ? (
             <CheckCircle size={18} weight="bold" className="text-green-500" />
@@ -84,7 +86,9 @@ function CriteriaRow({ item, index }: { item: AcceptanceCriteriaItem; index: num
             background: item.isOK ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
           }}
         >
-          {item.isOK ? (
+          {item.status === "incomplete" || item.status === "invalid" ? (
+            <WarningCircle size={14} weight="bold" className="text-amber-500" />
+          ) : item.isOK ? (
             <CheckCircle size={14} weight="bold" className="text-green-500" />
           ) : (
             <XCircle size={14} weight="bold" className="text-red-500" />
@@ -108,7 +112,7 @@ function CriteriaRow({ item, index }: { item: AcceptanceCriteriaItem; index: num
             color: item.isOK ? "#22c55e" : "#ef4444",
           }}
         >
-          {item.isOK ? "OK" : "NOT OK"}
+          <CalculationStatusBadge status={item.status} />
         </div>
       </div>
     </div>

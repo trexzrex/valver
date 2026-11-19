@@ -31,6 +31,8 @@ import {
   generateCalibrationCurvePoints,
 } from "@/lib/calculations";
 import { useSessionStorage } from "./useSessionStorage";
+import { useCalculationDraft } from "./useCalculationDraft";
+import type { DraftInputs } from "@/lib/draft";
 
 function num(v: string): number {
   if (v === "" || v === null || v === undefined) return NaN;
@@ -57,7 +59,6 @@ export function useValverCalculations() {
 
   const [stdRendah, setStdRendah] = useState<string>("0.2");
   const [stdTinggi, setStdTinggi] = useState<string>("10");
-  const [spikeNominal, setSpikeNominal] = useState<string>("4");
   const [mdlRequirement, setMdlRequirement] = useState<string>("0.05");
 
   const [idFields, setIdFields] = useSessionStorage<{ nama: string; nis: string; kelas: string }>("valver-id-fields", {
@@ -65,6 +66,19 @@ export function useValverCalculations() {
     nis: "",
     kelas: "",
   });
+
+  const draftInputs = useMemo(() => ({ kalibrasi, wrLow, wrHigh, blanko, spike, stdRendah, stdTinggi, mdlRequirement }), [kalibrasi, wrLow, wrHigh, blanko, spike, stdRendah, stdTinggi, mdlRequirement]);
+  const restoreInputs = useCallback((data: DraftInputs) => {
+    setKalibrasi(data.kalibrasi);
+    setWrLow(data.wrLow);
+    setWrHigh(data.wrHigh);
+    setBlanko(data.blanko);
+    setSpike(data.spike);
+    setStdRendah(data.stdRendah);
+    setStdTinggi(data.stdTinggi);
+    setMdlRequirement(data.mdlRequirement);
+  }, []);
+  const draft = useCalculationDraft(draftInputs, restoreInputs);
 
   const calibration = useMemo(() => computeCalibration(kalibrasi), [kalibrasi]);
 
@@ -229,12 +243,12 @@ export function useValverCalculations() {
     setSpike(Array.from({ length: 10 }, () => ({ abs: "", ppm: "" })));
     setStdRendah("0.2");
     setStdTinggi("10");
-    setSpikeNominal("4");
     setMdlRequirement("0.05");
     setIdFields({ nama: "", nis: "", kelas: "" });
   }, [setIdFields]);
 
   return {
+    draft,
     kalibrasi,
     setKalibrasi,
     wrLow,
@@ -246,7 +260,6 @@ export function useValverCalculations() {
     stdTinggi,
     setStdTinggi,
     spikeNominal: effectiveSpikeNominal,
-    setSpikeNominal,
     mdlRequirement,
     setMdlRequirement,
     idFields,

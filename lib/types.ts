@@ -1,3 +1,5 @@
+import type { CalculationStatus } from "@/lib/calculationStatus";
+
 export interface KalibrasiRow {
   x: string;
   y: string;
@@ -133,14 +135,17 @@ export interface PrecisionResult {
   cvLow: number;
   cv67Low: number;
   precisionLowOK: boolean;
+  statusLow: CalculationStatus;
   sdHigh: number;
   sdrHigh: number;
   cvHigh: number;
   cv67High: number;
   precisionHighOK: boolean;
+  statusHigh: CalculationStatus;
 }
 
 export interface AccuracyResult {
+  status: CalculationStatus;
   accuracy: number;
   isOK: boolean;
 }
@@ -153,6 +158,7 @@ export interface MDLResult {
 }
 
 export interface AcceptanceCriteriaItem {
+  status: CalculationStatus;
   label: string;
   hasil: string;
   requirement: string;
@@ -160,7 +166,7 @@ export interface AcceptanceCriteriaItem {
 }
 
 export interface AcceptanceCriteria {
-  workingRange: { pg: number; isOK: boolean };
+  workingRange: { pg: number; isOK: boolean; status: CalculationStatus };
   accuracy: { percentAccuracy: number; isOK: boolean };
   lod: {
     mdlBlanko: number;

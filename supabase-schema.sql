@@ -20,16 +20,8 @@ CREATE INDEX IF NOT EXISTS idx_users_analysis_nis ON users_analysis(nis);
 -- Enable Row Level Security (RLS)
 ALTER TABLE users_analysis ENABLE ROW LEVEL SECURITY;
 
--- Policy: Allow inserts from authenticated and anonymous users (for form submission)
-CREATE POLICY "Allow insert for all" ON users_analysis
-  FOR INSERT TO anon, authenticated
-  WITH CHECK (true);
-
--- Policy: Allow users to read their own data (optional, for future use)
-CREATE POLICY "Allow select for all" ON users_analysis
-  FOR SELECT TO anon, authenticated
-  USING (true);
-
--- Grant permissions
-GRANT ALL ON users_analysis TO anon, authenticated;
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
+-- Identities are private. Only the server may insert and read the inserted ID.
+DROP POLICY IF EXISTS "Allow insert for all" ON users_analysis;
+DROP POLICY IF EXISTS "Allow select for all" ON users_analysis;
+REVOKE ALL ON TABLE users_analysis FROM anon, authenticated;
+GRANT SELECT, INSERT ON TABLE users_analysis TO service_role;
