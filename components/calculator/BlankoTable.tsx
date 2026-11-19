@@ -1,9 +1,11 @@
 ﻿"use client";
 
+import { summarizeNumbers } from "@/lib/reportSummary";
+
 import { motion } from "motion/react";
 import { EditableTable, Column } from "./EditableTable";
 import { ReplicateRow, ReplicateResult } from "@/lib/types";
-import { formatNumber, formatNumberFixed } from "@/lib/utils/numberFormat";
+import { formatNumber, formatBlankoDeviation } from "@/lib/utils/numberFormat";
 
 interface BlankoTableProps {
   data: ReplicateRow[];
@@ -94,17 +96,17 @@ export function BlankoTable({ data, result, onUpdate, onAddRow, onRemoveRow, mdl
           <>
             <tr className="border-t-2 border-b font-semibold" style={{ borderColor: "var(--accent)", background: "var(--surface-muted)", color: "var(--accent)" }}>
               <td className="px-4 py-3">Σ</td>
-              <td className="px-4 py-3 font-mono">{formatNumber(data.reduce((sum, row) => sum + (parseFloat(row.abs) || 0), 0))}</td>
-              <td className="px-4 py-3 font-mono">{formatNumber(result.vals.filter(Number.isFinite).reduce((sum, value) => sum + value, 0))}</td>
-              <td className="px-4 py-3 font-mono">{formatNumber(result.devs.filter((value): value is number => value !== null).reduce((sum, value) => sum + value, 0))}</td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(data.map(row => row.abs)).sum)}</td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(result.vals).sum)}</td>
+              <td className="px-4 py-3 font-mono">{formatBlankoDeviation(summarizeNumbers(result.devs).sum)}</td>
               <td className="px-4 py-3 font-mono">{formatNumber(result.sumsq)}</td>
               <td className="px-4 py-3"></td>
             </tr>
             <tr className="border-b font-semibold" style={{ borderColor: "var(--border-subtle)", background: "var(--surface-muted)", color: "var(--accent)" }}>
               <td className="px-4 py-3">Rata Rata</td>
-              <td className="px-4 py-3 font-mono">{result.n > 0 ? formatNumber(data.reduce((sum, row) => sum + (parseFloat(row.abs) || 0), 0) / result.n) : "-"}</td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(data.map(row => row.abs)).average)}</td>
               <td className="px-4 py-3 font-mono">{formatNumber(result.avg)}</td>
-              <td className="px-4 py-3 font-mono">{result.n > 0 ? formatNumber(result.devs.filter((value): value is number => value !== null).reduce((sum, value) => sum + value, 0) / result.n) : "-"}</td>
+              <td className="px-4 py-3 font-mono">{formatBlankoDeviation(summarizeNumbers(result.devs).average)}</td>
               <td className="px-4 py-3 font-mono">{result.n > 0 ? formatNumber(result.devsq.filter((value): value is number => value !== null).reduce((sum, value) => sum + value, 0) / result.n) : "-"}</td>
               <td className="px-4 py-3"></td>
             </tr>

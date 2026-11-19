@@ -31,6 +31,11 @@ export function verifySessionToken(token: string | undefined, secret: string, no
   }
 }
 
+export function getSessionIdentityId(token: string | undefined, secret: string): string | null {
+  if (!verifySessionToken(token, secret)) return null;
+  return JSON.parse(Buffer.from(token!.split(".")[0], "base64url").toString("utf8")).id;
+}
+
 export function sessionCookieOptions() {
   return { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", maxAge: SESSION_MAX_AGE };
 }

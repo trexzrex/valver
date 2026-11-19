@@ -7,7 +7,11 @@ import { CircleNotch, FileArrowDown } from "@phosphor-icons/react";
 import { statusLabels, safeRatio } from "@/lib/calculationStatus";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
+import { formatNumber, formatBlankoDeviation } from "@/lib/utils/numberFormat";
+import { summarizeNumbers, pdfMathText } from "@/lib/reportSummary";
+import { buildCalibrationSteps, formatStepNumber, formatMathNumber } from "@/lib/calibrationSteps";
+import { renderPdfFormula } from "@/lib/pdfFormula";
+import { buildCalibrationPlot } from "@/lib/calibrationPlot";
 
 interface PDFExportButtonProps {
   calibration: ReturnType<typeof import("@/lib/calculations").computeCalibration> | null;
@@ -64,10 +68,11 @@ export function PDFExportButton({
 }: PDFExportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [notification, setNotification] = useState<"success" | "error" | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const generatePDF = async () => {
     // Use contentRef if provided, otherwise fallback to main content selector
-    const targetElement = document.querySelector('main') || contentRef?.current;
+    const targetElement = contentRef?.current || document.querySelector('main');
     
     if (!targetElement) {
       alert("Konten tidak ditemukan untuk di-export");
@@ -77,6 +82,9 @@ export function PDFExportButton({
     setIsGenerating(true);
 
     try {
+      const identityResponse = await fetch("/api/session", { cache: "no-store" });
+      if (!identityResponse.ok) throw new Error("Identitas laporan tidak tersedia. Silakan masuk kembali.");
+      const { identity } = await identityResponse.json();
       const pdf = new jsPDF("p", "mm", "a4");
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(16);
@@ -88,14 +96,14 @@ export function PDFExportButton({
 
       let y = 35;
       const section = (title: string) => {
-        if (y > 270) { pdf.addPage(); y = 18; }
+        if (y > 250) { pdf.addPage(); y = 18; }
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(12);
         pdf.text(title, 14, y);
         y += 6;
       };
       const table = (headers: string[], rows: string[][]) => {
-        autoTable(pdf, { startY: y, head: [headers], body: rows, theme: "grid", styles: { fontSize: 7 }, headStyles: { fillColor: [20, 70, 80] }, margin: { left: 14, right: 14 } });
+        autoTable(pdf, { startY: y, head: [headers.map(pdfMathText)], body: rows.map(row => row.map(pdfMathText)), theme: "grid", rowPageBreak: "avoid", styles: { fontSize: 7, overflow: "linebreak" }, headStyles: { fillColor: [20, 70, 80] }, margin: { left: 14, right: 14 } });
         y = (pdf as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
       };
 
@@ -105,21 +113,82 @@ export function PDFExportButton({
         return Number.isFinite(numeric) ? formatNumber(numeric, decimals) : typeof value === "number" ? "-" : String(value);
       };
       const rowValues = (rows: Array<Record<string, number>>, keys: string[]) => rows.map((row, index) => [String(index + 1), ...keys.map((key) => text(row[key]))]);
-      const sum = (values: Array<number | null | undefined>) => values.filter((value): value is number => Number.isFinite(value)).reduce((total, value) => total + value, 0);
-      const average = (values: Array<number | null | undefined>) => {
-        const valid = values.filter((value): value is number => Number.isFinite(value));
-        return valid.length ? sum(valid) / valid.length : NaN;
+      const sum = (values: Array<string | number | null | undefined>) => summarizeNumbers(values).sum;
+      const average = (values: Array<string | number | null | undefined>) => summarizeNumbers(values).average;
+
+      const formulaBlock = async (title: string, expressions: Array<{ label: string; latex: string }>) => {
+        const rendered = await Promise.all(expressions.map(async expression => ({ ...expression, image: await renderPdfFormula(expression.latex) })));
+        const layouts = rendered.map(item => {
+          const width = Math.min(174, item.image.width * 0.264583);
+          return { ...item, width, height: item.image.height / item.image.width * width };
+        });
+        const blockHeight = 14 + layouts.reduce((total, item) => total + 6 + item.height + 5, 0);
+        if (y + blockHeight > 275) { pdf.addPage(); y = 18; }
+        section(title);
+        for (const item of layouts) {
+          pdf.setFont("helvetica", "normal"); pdf.setFontSize(9); pdf.setTextColor(75);
+          pdf.text(item.label, 18, y + 3); y += 6;
+          pdf.addImage(item.image.data, "PNG", 18, y, item.width, item.height);
+          y += item.height + 5;
+        }
+        pdf.setTextColor(0);
+        y += 3;
       };
 
+      section("Identitas & Parameter Acuan");
+      table(["Parameter", "Nilai"], [["Nama", identity.nama], ["NIS", identity.nis], ["Kelas", identity.kelas],
+        ["Standar rendah (ppm)", text(stdRendah)], ["Standar tinggi (ppm)", text(stdTinggi)],
+        ["Spike nominal (ppm)", text(spikeNominal)], ["Batas MDL (ppm)", text(mdlRequirement)]]);
       section("1. Kurva Kalibrasi");
       if (calibration) {
-        table(["Parameter", "Nilai"], [["Slope (B)", text(calibration.B)], ["Intercept (A)", text(calibration.A)], ["Persamaan", `y = ${calibration.B}x + ${calibration.A}`], ["R (Cara 1)", text(calibration.R1)], ["R (Cara 2)", text(calibration.R2)], ["R²", text(calibration.R1 * calibration.R1)], ["n", text(calibration.n)]]);
+        table(["Parameter", "Nilai"], [["Slope (B)", text(calibration.B)], ["Intercept (A)", text(calibration.A)], ["Persamaan", `y = ${formatStepNumber(calibration.B)}x ${calibration.A < 0 ? "-" : "+"} ${formatStepNumber(Math.abs(calibration.A))}`], ["R (Cara 1)", text(calibration.R1)], ["R (Cara 2)", text(calibration.R2)], ["R²", text(calibration.R1 * calibration.R1)], ["n", text(calibration.n)]]);
         table(["No", "ppm (x)", "Absorban (y)", "x^2", "y^2", "x*y"], [
           ...calibration.computedRows.map((row, i) => [String(i + 1), text(row.x), text(row.y), text(row.x2), text(row.y2), text(row.xy)]),
           ["Σ", text(calibration.sumRow.sumx), text(calibration.sumRow.sumy), text(calibration.sumRow.sumx2), text(calibration.sumRow.sumy2), text(calibration.sumRow.sumxy)],
           ["Rata Rata", text(calibration.avgRow.avgx), text(calibration.avgRow.avgy), "-", "-", "-"],
         ]);
-        table(["No", "Sebelum Linear", "Setelah Linear"], linearRows.map((row, i) => [String(i + 1), text(row.y), text(row.yPred)]));
+        table(["No", "Konsentrasi (ppm)", "Sebelum Linear", "Setelah Linear"], linearRows.map((row, i) => [String(i + 1), text(row.x), text(row.y), text(row.yPred)]));
+        pdf.addPage(); y = 18;
+        section("Langkah Perhitungan Kalibrasi");
+        for (const step of buildCalibrationSteps(calibration)) {
+          await formulaBlock(step.label, [
+            { label: "1. Rumus umum", latex: step.formulaLatex },
+            { label: "2. Substitusi angka", latex: step.substitutionLatex },
+            { label: "3. Hasil akhir", latex: step.resultLatex },
+          ]);
+        }
+        pdf.addPage(); y = 18;
+        section("Perhitungan Absorbansi Prediksi");
+        await formulaBlock("Rumus prediksi", [{ label: "Rumus umum", latex: String.raw`\hat{y}_i = bx_i + a` }]);
+        for (const [i, row] of linearRows.entries()) {
+          await formulaBlock(`Baris ${i + 1}`, [{ label: "Substitusi dan hasil", latex: `\\hat{y}_{${i + 1}} = \\left(${formatMathNumber(calibration.B)}\\right) \\times \\left(${formatMathNumber(row.x)}\\right) + \\left(${formatMathNumber(calibration.A)}\\right) = ${formatMathNumber(row.yPred)}` }]);
+        }
+        const plot = buildCalibrationPlot(calibration);
+        if (plot) {
+          // A dedicated page keeps the vector chart legible and independent of the active web tab.
+          pdf.addPage(); y = 18;
+          section("Grafik Pengukuran & Prediksi");
+          const left = 30, top = y + 8, width = 155, height = 85;
+          const px = (x: number) => left + (x - plot.xDomain[0]) / (plot.xDomain[1] - plot.xDomain[0]) * width;
+          const py = (value: number) => top + height - (value - plot.yDomain[0]) / (plot.yDomain[1] - plot.yDomain[0]) * height;
+          pdf.setDrawColor(120); pdf.setLineWidth(0.3);
+          pdf.line(left, top, left, top + height); pdf.line(left, top + height, left + width, top + height);
+          pdf.setFontSize(8); pdf.text("Absorbansi", left, top - 3); pdf.text("Konsentrasi (ppm)", left + width / 2, top + height + 13, { align: "center" });
+          for (let i = 0; i <= 4; i++) {
+            const x = plot.xDomain[0] + (plot.xDomain[1] - plot.xDomain[0]) * i / 4;
+            const value = plot.yDomain[0] + (plot.yDomain[1] - plot.yDomain[0]) * i / 4;
+            pdf.text(formatStepNumber(x), px(x), top + height + 5, { align: "center" });
+            pdf.text(formatStepNumber(value), left - 2, py(value), { align: "right" });
+          }
+          for (const [points, color] of [[plot.measuredLine, [2, 132, 199]], [plot.predictedLine, [234, 88, 12]]] as const) {
+            pdf.setDrawColor(color[0], color[1], color[2]); pdf.setLineWidth(0.5);
+            points.forEach((point, i) => { if (i) pdf.line(px(points[i - 1].x), py(points[i - 1].y), px(point.x), py(point.y)); });
+          }
+          plot.points.forEach(point => { pdf.setDrawColor(2, 132, 199); pdf.setFillColor(2, 132, 199); pdf.circle(px(point.x), py(point.y), 1, "F"); pdf.text(`S${point.row}`, px(point.x) + 2, py(point.y) - 2); });
+          plot.predicted.forEach(point => { pdf.setDrawColor(234, 88, 12); pdf.rect(px(point.x) - 1.4, py(point.y) - 1.4, 2.8, 2.8); pdf.text(`P${point.row}`, px(point.x) + 2, py(point.y) + 4); });
+          y = top + height + 22;
+          table(["Seri", "Keterangan"], [["S (biru)", "Absorbansi pengukuran; garis menghubungkan titik menurut konsentrasi."], ["P (oranye)", "Absorbansi prediksi garis regresi dalam rentang pengukuran."]]);
+        }
       } else table(["Status"], [["Belum ada data kalibrasi valid"]]);
 
       section("2. Korelasi (R)");
@@ -141,8 +210,8 @@ export function PDFExportButton({
       section("3. Working Range & Validasi");
       const replicateRows = (rows: Array<{ abs: string; ppm?: string | number }>, result: typeof lowResult) => [
         ...rows.map((row, i) => [String(i + 1), text(row.abs), text(row.ppm), text(result.devs[i]), text(result.devsq[i])]),
-        ["Σ", text(sum(rows.map((row) => Number(row.abs))),), text(sum(result.vals)), text(sum(result.devs)), text(result.sumsq)],
-        ["Rata Rata", text(average(rows.map((row) => Number(row.abs)))), text(result.avg), text(average(result.devs)), text(average(result.devsq))],
+        ["Σ", text(sum(rows.map((row) => row.abs)),), text(sum(result.vals)), text(sum(result.devs)), text(result.sumsq)],
+        ["Rata Rata", text(average(rows.map((row) => row.abs))), text(result.avg), text(average(result.devs)), text(average(result.devsq))],
       ];
       section("Standar Rendah");
       table(["No", "Absorban", "ppm (x)", "x - x rata-rata", "(x - x rata-rata)^2"], replicateRows(wrLowRows, lowResult));
@@ -158,14 +227,17 @@ export function PDFExportButton({
       table(["Parameter", "Standar Rendah", "Standar Tinggi"], [["% Akurasi", text(accuracyLow.accuracy, 2), text(accuracyHigh.accuracy, 2)], ["Status", statusLabels[accuracyLow.status], statusLabels[accuracyHigh.status]]]);
 
       section("4. Limit Deteksi (Blanko)");
-      table(["No", "Absorban", "ppm (x)", "x - x rata-rata", "(x - x rata-rata)^2"], replicateRows(blankoRows, blankoResult));
+      const blankoExportRows = replicateRows(blankoRows, blankoResult);
+      blankoExportRows[blankoRows.length][3] = formatBlankoDeviation(summarizeNumbers(blankoResult.devs).sum);
+      blankoExportRows[blankoRows.length + 1][3] = formatBlankoDeviation(summarizeNumbers(blankoResult.devs).average);
+      table(["No", "Absorban", "ppm (x)", "x - x rata-rata", "(x - x rata-rata)^2"], blankoExportRows);
       table(["Hasil", "Nilai"], [["SD Blanko", text(blankoResult.s2 ** 0.5)], ["Estimasi MDL = 5 × SD", text(mdl.mdlBlanko)]]);
 
       section("5. Uji Spike");
       table(["No", "Absorban", "ppm (x)", "x - x rata-rata", "(x - x rata-rata)^2", "% Recovery"], [
         ...spikeRows.map((row, i) => [String(i + 1), text(row.abs), text(row.ppm), text(spikeResult.devs[i]), text(spikeResult.devsq[i]), text(spikeResult.computedRows[i]?.recovery)]),
-        ["Σ", text(sum(spikeRows.map((row) => Number(row.abs)))), text(sum(spikeResult.vals)), text(sum(spikeResult.devs)), text(spikeResult.sumsq), text(sum(spikeResult.computedRows.map((row) => row.recovery)))],
-        ["Rata Rata", text(average(spikeRows.map((row) => Number(row.abs)))), text(spikeResult.avg), text(average(spikeResult.devs)), text(average(spikeResult.devsq)), text(average(spikeResult.computedRows.map((row) => row.recovery)))],
+        ["Σ", text(sum(spikeRows.map((row) => row.abs))), text(sum(spikeResult.vals)), text(sum(spikeResult.devs)), text(spikeResult.sumsq), text(sum(spikeResult.computedRows.map((row) => row.recovery)))],
+        ["Rata Rata", text(average(spikeRows.map((row) => row.abs))), text(spikeResult.avg), text(average(spikeResult.devs)), text(average(spikeResult.devsq)), text(average(spikeResult.computedRows.map((row) => row.recovery)))],
       ]);
       table(["Hasil", "Nilai"], [["Spike Nominal", text(spikeNominal)], ["SD Spike", text(spikeResult.s2 ** 0.5)], ["Recovery", text(mdl.recovery)], ["MDL = 2,821 × SD", text(mdl.mdlSpike)], ["LOQ = 10 × MDL", text(mdl.loqSpike)], ["S/N Ratio", text(safeRatio(spikeResult.avg, Math.sqrt(spikeResult.s2)))]]);
 
@@ -176,7 +248,7 @@ export function PDFExportButton({
       window.setTimeout(() => setNotification(null), 5000);
     } catch (error) {
       console.error("PDF generation error:", error);
-      const message = error instanceof Error ? error.message : "Kesalahan tidak diketahui";
+      setErrorMessage(error instanceof Error ? error.message : "Kesalahan tidak diketahui");
       setNotification("error");
       window.setTimeout(() => setNotification(null), 8000);
     } finally {
@@ -198,7 +270,7 @@ export function PDFExportButton({
       {notification === "success" ? (
         "PDF berhasil diunduh."
       ) : (
-        <span>Terjadi kesalahan saat mengunduh PDF. Hubungi developer melalui <a className="font-semibold underline" href="https://www.instagram.com/athaar.mp?igsi=MTl2NG5saHlkd21wYw==" target="_blank" rel="noreferrer">@athaar.mp</a>.</span>
+        <span>{errorMessage} PDF tidak diunduh. Hubungi developer melalui <a className="font-semibold underline" href="https://www.instagram.com/athaar.mp?igsi=MTl2NG5saHlkd21wYw==" target="_blank" rel="noreferrer">@athaar.mp</a>.</span>
       )}
     </div>
   ) : null;

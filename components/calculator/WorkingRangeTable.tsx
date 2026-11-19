@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { EditableTable, Column } from "./EditableTable";
 import { ReplicateRow, ReplicateResult } from "@/lib/types";
+import { summarizeNumbers } from "@/lib/reportSummary";
 import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
 
 interface WorkingRangeTableProps {
@@ -129,18 +130,18 @@ export function WorkingRangeTable({
           <>
             <tr className="border-t-2 border-b font-semibold" style={{ borderColor: "var(--accent)", background: "var(--surface-muted)", color: "var(--accent)" }}>
               <td className="px-4 py-3">Σ</td>
-              <td className="px-4 py-3"></td>
-              <td className="px-4 py-3 font-mono">{formatNumber(result.vals.reduce((a, b) => a + b, 0))}</td>
-              <td className="px-4 py-3"></td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(data.map(row => row.abs)).sum)}</td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(result.vals).sum)}</td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(result.devs).sum)}</td>
               <td className="px-4 py-3 font-mono">{formatNumber(result.sumsq)}</td>
               <td className="px-4 py-3"></td>
             </tr>
             <tr className="border-b font-semibold" style={{ borderColor: "var(--border-subtle)", background: "var(--surface-muted)", color: "var(--accent)" }}>
               <td className="px-4 py-3">Rata Rata</td>
-              <td className="px-4 py-3"></td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(data.map(row => row.abs)).average)}</td>
               <td className="px-4 py-3 font-mono">{formatNumber(result.avg)}</td>
-              <td className="px-4 py-3"></td>
-              <td className="px-4 py-3"></td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(result.devs).average)}</td>
+              <td className="px-4 py-3 font-mono">{formatNumber(summarizeNumbers(result.devsq).average)}</td>
               <td className="px-4 py-3"></td>
             </tr>
           </>

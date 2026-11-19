@@ -18,6 +18,15 @@
   });
 }
 
+export function formatBlankoDeviation(value: number): string {
+  if (!Number.isFinite(value)) return '-';
+  const rounded = Number(value.toFixed(8));
+  return (rounded === 0 ? 0 : rounded).toLocaleString('id-ID', {
+    minimumFractionDigits: 8,
+    maximumFractionDigits: 8,
+  });
+}
+
 export function formatNumber(value: number, decimals: number = 6): string {
   return formatValue(value, decimals);
 }
