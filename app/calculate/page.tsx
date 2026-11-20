@@ -20,6 +20,7 @@ import { DisableZoom } from "@/components/DisableZoom";
 import { FooterActions } from "@/components/FooterActions";
 import { DraftNotice } from "@/components/calculator/DraftNotice";
 import { ResetDraftDialog } from "@/components/calculator/ResetDraftDialog";
+import { ResultStatCard } from "@/components/calculator/ResultStatCard";
 import { KalibrasiRow, ReplicateRow, SpikeRow } from "@/lib/types";
 import { PDFExportButton } from "@/components/calculator/PDFExport";
 import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
@@ -425,11 +426,11 @@ export default function CalculatePage() {
                         </div>
 
                         <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
-                          <StatCard
+                          <ResultStatCard tone="measurement"
                             label="S² Standar Rendah"
                             value={Number.isFinite(lowResult.s2) ? formatNumber(lowResult.s2, 8) : "-"}
                           />
-                          <StatCard
+                          <ResultStatCard tone="measurement"
                             label="S² Standar Tinggi"
                             value={Number.isFinite(highResult.s2) ? formatNumber(highResult.s2, 8) : "-"}
                           />
@@ -438,11 +439,11 @@ export default function CalculatePage() {
                         <div className="min-w-0 w-full rounded-xl border p-4 md:p-6" style={{ borderColor: "var(--border-default)", background: "var(--surface-muted)" }}>
                           <h3 className="mb-4 text-lg font-bold" style={{ color: "var(--text-primary)" }}>Uji Kesetaraan Working Range</h3>
                           <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
-                            <StatCard
+                            <ResultStatCard tone="result"
                               label="PG = S² Tinggi / S² Rendah"
                               value={Number.isFinite(lowResult.s2) && Number.isFinite(highResult.s2) && lowResult.s2 !== 0 ? formatNumber(highResult.s2 / lowResult.s2, 6) : "-"}
                             />
-                            <StatCard label="F tabel" value="5,18" />
+                            <ResultStatCard tone="reference" label="F tabel" value="5,18" />
                             <div className="flex min-w-0 flex-col justify-center rounded-lg border p-3" style={{ borderColor: "var(--border-default)", background: "var(--surface-muted)" }}>
                               <div className="mb-1 text-[10px]" style={{ color: "var(--text-muted)" }}>Status</div>
                               <div className="break-words text-sm font-semibold" style={Number.isFinite(lowResult.s2) && Number.isFinite(highResult.s2) && lowResult.s2 !== 0 && highResult.s2 / lowResult.s2 < 5.18 ? { color: "#22c55e" } : { color: "#ef4444" }}>
@@ -464,10 +465,10 @@ export default function CalculatePage() {
                               <div className="space-y-3">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: "var(--text-muted)" }}>Standar Rendah</h4>
                                 <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                  <StatCard label="SD" value={Number.isFinite(precision.sdLow) ? formatNumber(precision.sdLow, 8) : "-"} />
-                                  <StatCard label="SDR (%)" value={Number.isFinite(precision.sdrLow) ? `${precision.sdrLow.toFixed(3)}%` : "-"} />
-                                  <StatCard label="CV Horwitz" value={Number.isFinite(precision.cvLow) ? precision.cvLow.toFixed(3) : "-"} />
-                                  <StatCard label="0.67 × CV Horwitz" value={Number.isFinite(precision.cv67Low) ? precision.cv67Low.toFixed(3) : "-"} />
+                                  <ResultStatCard tone="measurement" label="SD" value={Number.isFinite(precision.sdLow) ? formatNumber(precision.sdLow, 8) : "-"} />
+                                  <ResultStatCard tone="result" label="SDR (%)" value={Number.isFinite(precision.sdrLow) ? `${precision.sdrLow.toFixed(3)}%` : "-"} />
+                                  <ResultStatCard tone="reference" label="CV Horwitz" value={Number.isFinite(precision.cvLow) ? precision.cvLow.toFixed(3) : "-"} />
+                                  <ResultStatCard tone="reference" label="0.67 × CV Horwitz" value={Number.isFinite(precision.cv67Low) ? precision.cv67Low.toFixed(3) : "-"} />
                                 </div>
                                 <div className="text-center">
                                   <CalculationStatusBadge status={precision.statusLow} />
@@ -476,10 +477,10 @@ export default function CalculatePage() {
                               <div className="space-y-3">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: "var(--text-muted)" }}>Standar Tinggi</h4>
                                 <div className="grid grid-cols-2 gap-2 md:gap-4">
-                                  <StatCard label="SD" value={Number.isFinite(precision.sdHigh) ? formatNumber(precision.sdHigh, 8) : "-"} />
-                                  <StatCard label="SDR (%)" value={Number.isFinite(precision.sdrHigh) ? `${precision.sdrHigh.toFixed(3)}%` : "-"} />
-                                  <StatCard label="CV Horwitz" value={Number.isFinite(precision.cvHigh) ? precision.cvHigh.toFixed(3) : "-"} />
-                                  <StatCard label="0.67 × CV Horwitz" value={Number.isFinite(precision.cv67High) ? precision.cv67High.toFixed(3) : "-"} />
+                                  <ResultStatCard tone="measurement" label="SD" value={Number.isFinite(precision.sdHigh) ? formatNumber(precision.sdHigh, 8) : "-"} />
+                                  <ResultStatCard tone="result" label="SDR (%)" value={Number.isFinite(precision.sdrHigh) ? `${precision.sdrHigh.toFixed(3)}%` : "-"} />
+                                  <ResultStatCard tone="reference" label="CV Horwitz" value={Number.isFinite(precision.cvHigh) ? precision.cvHigh.toFixed(3) : "-"} />
+                                  <ResultStatCard tone="reference" label="0.67 × CV Horwitz" value={Number.isFinite(precision.cv67High) ? precision.cv67High.toFixed(3) : "-"} />
                                 </div>
                                 <div className="text-center">
                                   <CalculationStatusBadge status={precision.statusHigh} />
@@ -505,14 +506,14 @@ export default function CalculatePage() {
                             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 md:gap-6">
                               <div className="space-y-3">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: "var(--text-muted)" }}>Standar Rendah</h4>
-                                <StatCard label="% Akurasi" value={Number.isFinite(accuracyLow.accuracy) ? `${accuracyLow.accuracy.toFixed(2)}%` : "-"} />
+                                <ResultStatCard tone="accuracy" label="% Akurasi" value={Number.isFinite(accuracyLow.accuracy) ? `${accuracyLow.accuracy.toFixed(2)}%` : "-"} />
                                 <div className="text-center">
                                   <CalculationStatusBadge status={accuracyLow.status} />
                                 </div>
                               </div>
                               <div className="space-y-3">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: "var(--text-muted)" }}>Standar Tinggi</h4>
-                                <StatCard label="% Akurasi" value={Number.isFinite(accuracyHigh.accuracy) ? `${accuracyHigh.accuracy.toFixed(2)}%` : "-"} />
+                                <ResultStatCard tone="accuracy" label="% Akurasi" value={Number.isFinite(accuracyHigh.accuracy) ? `${accuracyHigh.accuracy.toFixed(2)}%` : "-"} />
                                 <div className="text-center">
                                   <CalculationStatusBadge status={accuracyHigh.status} />
                                 </div>

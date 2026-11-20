@@ -19,6 +19,18 @@
 :root { --background: #fafafa; --foreground: #18181b; --surface: #fafafa; --surface-elevated: #fff; --surface-muted: #f4f4f5; --text-primary: #18181b; --text-secondary: #52525b; --text-muted: #71717a; --border-subtle: rgba(0,0,0,.06); --border-default: rgba(0,0,0,.1); --accent: #0891b2; --accent-hover: #0e7490; --accent-muted: rgba(8,145,178,.1); }
 .dark { --background: #09090b; --foreground: #ededed; --surface: #09090b; --surface-elevated: #18181b; --surface-muted: #27272a; --text-primary: #ededed; --text-secondary: #a1a1aa; --text-muted: #71717a; --border-subtle: rgba(255,255,255,.06); --border-default: rgba(255,255,255,.1); --accent: #22d3ee; --accent-hover: #06b6d4; --accent-muted: rgba(34,211,238,.1); }
 
+/* Result categories are separate from green/red acceptance status. */
+.result-stat-card { background: color-mix(in srgb, var(--result-tint) 9%, var(--surface-elevated)); border-color: color-mix(in srgb, var(--result-tint) 30%, var(--border-default)); border-left-color: var(--result-ink); }
+.result-stat-value { color: var(--result-ink); }
+.result-stat-card[data-tone="measurement"] { --result-tint:#2563eb; --result-ink:#1d4ed8; }
+.result-stat-card[data-tone="result"] { --result-tint:#7c3aed; --result-ink:#6d28d9; }
+.result-stat-card[data-tone="reference"] { --result-tint:#d97706; --result-ink:#92400e; }
+.result-stat-card[data-tone="accuracy"] { --result-tint:#0d9488; --result-ink:#0f766e; }
+.dark .result-stat-card[data-tone="measurement"] { --result-ink:#93c5fd; }
+.dark .result-stat-card[data-tone="result"] { --result-ink:#c4b5fd; }
+.dark .result-stat-card[data-tone="reference"] { --result-ink:#fcd34d; }
+.dark .result-stat-card[data-tone="accuracy"] { --result-ink:#5eead4; }
+
 html { scroll-behavior: smooth; }
 body { background: var(--background); color: var(--foreground); font-family: var(--font-sans), system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--accent-muted); color: var(--text-primary); }
