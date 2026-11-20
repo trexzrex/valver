@@ -21,6 +21,7 @@ import { FooterActions } from "@/components/FooterActions";
 import { DraftNotice } from "@/components/calculator/DraftNotice";
 import { ResetDraftDialog } from "@/components/calculator/ResetDraftDialog";
 import { ResultStatCard } from "@/components/calculator/ResultStatCard";
+import { SurfaceThemeToggle } from "@/components/calculator/SurfaceThemeToggle";
 import { KalibrasiRow, ReplicateRow, SpikeRow } from "@/lib/types";
 import { PDFExportButton } from "@/components/calculator/PDFExport";
 import { formatNumber, formatNumberFixed, formatPercent } from "@/lib/utils/numberFormat";
@@ -37,6 +38,7 @@ const sections = [
 export default function CalculatePage() {
   const [activeSection, setActiveSection] = useState<typeof sections[number]["id"]>("kalibrasi");
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [glass, setGlass] = useState(true);
   const kalibrasiRef = useRef<KalibrasiRow[]>([]);
   const wrLowRef = useRef<ReplicateRow[]>([]);
   const wrHighRef = useRef<ReplicateRow[]>([]);
@@ -104,7 +106,7 @@ export default function CalculatePage() {
   const enteredCalibrationRows = kalibrasi.filter((row) => row.x.trim() !== "" && row.y.trim() !== "").length;
 
   return (
-    <>
+    <div className={glass ? "calculator-theme liquid-glass" : "calculator-theme"}>
       <DisableZoom />
       <DraftNotice draft={draft} mode="recovery" />
       <ResetDraftDialog draft={draft} />
@@ -253,7 +255,8 @@ export default function CalculatePage() {
           <div className="w-full min-w-0" ref={mainContentRef}>
             <DraftNotice draft={draft} />
             {/* Reset Button - moved above tables */}
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <SurfaceThemeToggle glass={glass} onChange={setGlass} />
               <button type="button" onClick={draft.clear} disabled={draft.status === "loading" || draft.status === "choice" || draft.status === "blocked"} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-50" style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}>Reset perhitungan</button>
             </div>
 
@@ -580,7 +583,7 @@ export default function CalculatePage() {
         </div>
       </main>
     </div>
-  </>
+  </div>
   );
 }
 

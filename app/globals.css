@@ -31,6 +31,49 @@
 .dark .result-stat-card[data-tone="reference"] { --result-ink:#fcd34d; }
 .dark .result-stat-card[data-tone="accuracy"] { --result-ink:#5eead4; }
 
+/* Opt-in calculator surface theme; never applied to the report or other routes. */
+.calculator-theme.liquid-glass {
+  --glass-panel: rgba(255,255,255,.78);
+  --glass-edge: rgba(255,255,255,.9);
+  --glass-shadow: 0 12px 32px rgba(15,65,85,.09), inset 0 1px 0 rgba(255,255,255,.85);
+  --text-muted: #626773;
+  --accent: #0e7490;
+  background: var(--surface);
+}
+.dark .calculator-theme.liquid-glass {
+  --glass-panel: rgba(24,32,43,.85);
+  --glass-edge: rgba(175,220,235,.2);
+  --glass-shadow: 0 12px 32px rgba(0,0,0,.24), inset 0 1px 0 rgba(220,245,255,.1);
+  --text-muted: #a1aab8;
+  --text-secondary: #bcc5d2;
+  --accent: #67e8f9;
+}
+.liquid-glass .calculate-page {
+  background: radial-gradient(ellipse at 5% 5%, rgba(34,211,238,.18), transparent 42%), radial-gradient(ellipse at 95% 38%, rgba(129,140,248,.13), transparent 45%), radial-gradient(ellipse at 30% 95%, rgba(45,212,191,.12), transparent 45%), var(--surface) !important;
+}
+.liquid-glass :is(.calculate-header, .surface-theme-toggle, [role="dialog"], main .rounded-xl.border) {
+  background: var(--glass-panel) !important;
+  border-color: var(--glass-edge) !important;
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  backdrop-filter: blur(18px) saturate(130%);
+}
+.liquid-glass .calculate-header { border-bottom-color: var(--border-default) !important; }
+.liquid-glass [role="tablist"] { border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-edge); }
+.liquid-glass [role="tab"][aria-selected="true"] { box-shadow: 0 2px 6px rgba(15,65,85,.1), inset 0 1px 0 var(--glass-edge); }
+.liquid-glass .result-stat-card { background: color-mix(in srgb, var(--result-tint) 10%, var(--glass-panel)); box-shadow: inset 0 1px 0 var(--glass-edge), 0 4px 12px rgba(15,65,85,.04); }
+.liquid-glass :is(input, select, textarea, table) { background: var(--surface-elevated); }
+.liquid-glass [role="dialog"] { background: color-mix(in srgb, var(--surface-elevated) 94%, transparent) !important; }
+@supports not (backdrop-filter: blur(1px)) {
+  .calculator-theme.liquid-glass, .dark .calculator-theme.liquid-glass { --glass-panel: var(--surface-elevated); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .calculator-theme.liquid-glass, .dark .calculator-theme.liquid-glass { --glass-panel: var(--surface-elevated); }
+  .liquid-glass :is(.calculate-header, .surface-theme-toggle, [role="dialog"], main .rounded-xl.border) { background: var(--surface-elevated) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .liquid-glass .calculate-page { background: var(--surface) !important; }
+  .liquid-glass .result-stat-card { background: color-mix(in srgb, var(--result-tint) 9%, var(--surface-elevated)); }
+}
+
 html { scroll-behavior: smooth; }
 body { background: var(--background); color: var(--foreground); font-family: var(--font-sans), system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--accent-muted); color: var(--text-primary); }
