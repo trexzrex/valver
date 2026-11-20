@@ -65,7 +65,7 @@ export function InfoSection() {
   const stackedFeatures = features.slice(0, 3);
 
   return (
-    <section id="tentang" className="relative py-16 md:py-24 px-6 md:px-8" style={{ background: "var(--surface)" }}>
+    <section id="tentang" className="instrument-info relative py-16 md:py-24 px-6 md:px-8" style={{ background: "var(--surface)" }}>
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Section header */}
         <motion.div

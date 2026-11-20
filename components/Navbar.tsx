@@ -14,7 +14,7 @@ export function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b"
+      className="site-navigation fixed top-3 left-3 right-3 z-50 rounded-2xl border"
       style={{
         background: "color-mix(in srgb, var(--surface) 80%, transparent)",
         borderColor: "var(--border-subtle)",
@@ -40,14 +40,14 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-8">
           <Link
-            href="#tentang"
+            href="/#tentang"
             className="text-sm font-medium transition-colors hover:opacity-80"
             style={{ color: "var(--text-secondary)" }}
           >
             Tentang
           </Link>
           <Link
-            href="#manfaat"
+            href="/#manfaat"
             className="text-sm font-medium transition-colors hover:opacity-80"
             style={{ color: "var(--text-secondary)" }}
           >
@@ -94,7 +94,7 @@ export function Navbar() {
           >
             <div className="px-6 py-4 flex flex-col gap-3">
               <Link
-                href="#tentang"
+                href="/#tentang"
                 onClick={() => setMenuOpen(false)}
                 className="text-sm font-medium py-2"
                 style={{ color: "var(--text-secondary)" }}
@@ -102,7 +102,7 @@ export function Navbar() {
                 Tentang
               </Link>
               <Link
-                href="#manfaat"
+                href="/#manfaat"
                 onClick={() => setMenuOpen(false)}
                 className="text-sm font-medium py-2"
                 style={{ color: "var(--text-secondary)" }}

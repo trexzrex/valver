@@ -31,7 +31,76 @@
 .dark .result-stat-card[data-tone="reference"] { --result-ink:#fcd34d; }
 .dark .result-stat-card[data-tone="accuracy"] { --result-ink:#5eead4; }
 
-/* Opt-in calculator surface theme; never applied to the report or other routes. */
+/* Instrument Glass: navigation floats; data surfaces remain legible and solid. */
+.instrument-glass {
+  --glass-panel: rgba(255,255,255,.78);
+  --glass-edge: rgba(255,255,255,.9);
+  --glass-shadow: 0 12px 32px rgba(15,65,85,.09), inset 0 1px 0 rgba(255,255,255,.85);
+  --surface: #f5f8fa;
+  --surface-muted: #edf2f5;
+  --text-muted: #626773;
+  --accent: #0e7490;
+  background: radial-gradient(ellipse at 0 0, rgba(34,211,238,.12), transparent 46%), var(--surface);
+}
+.dark .instrument-glass {
+  --glass-panel: rgba(24,32,43,.88);
+  --glass-edge: rgba(175,220,235,.22);
+  --glass-shadow: 0 12px 32px rgba(0,0,0,.24), inset 0 1px 0 rgba(220,245,255,.12);
+  --surface: #0b1118;
+  --surface-elevated: #151d27;
+  --surface-muted: #1d2835;
+  --text-primary: #edf4f8;
+  --text-secondary: #bcc5d2;
+  --text-muted: #a1aab8;
+  --accent: #67e8f9;
+}
+.instrument-glass > main { padding-top: 88px; }
+.instrument-glass :is(.site-navigation, .calculate-header) {
+  background: var(--glass-panel) !important;
+  border-color: var(--glass-edge) !important;
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+}
+.instrument-glass .site-navigation { max-width: 1400px; margin-inline: auto; }
+.instrument-glass .site-navigation nav { padding-inline: 20px; }
+.instrument-glass .site-navigation > div { background: transparent !important; }
+.instrument-glass .site-navigation :is(button, a[href="/input"]) { border-radius: 999px; }
+.instrument-glass .site-navigation a[href="/input"] { padding: 10px 18px; color: var(--accent) !important; background: var(--accent-muted); box-shadow: inset 0 1px 0 var(--glass-edge); }
+.instrument-glass :is(a, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.instrument-glass :is(.instrument-hero, .input-page, .instrument-info) { background: radial-gradient(ellipse at 0 20%, rgba(34,211,238,.1), transparent 52%), var(--surface) !important; }
+.instrument-glass .instrument-hero { padding-top: 4rem; }
+.instrument-glass .instrument-hero a { box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 8px 20px rgba(14,116,144,.18); }
+.instrument-glass :is(.feature-card, .metric-card, .stacked-feature-card, .input-page form) {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border-default);
+  box-shadow: inset 0 1px 0 var(--glass-edge), 0 10px 28px rgba(15,65,85,.06);
+  backdrop-filter: none;
+}
+.instrument-glass .input-page { position: relative; overflow: hidden; }
+.instrument-glass .input-content { position: relative; z-index: 1; }
+.instrument-glass .input-page form { border-radius: 24px; }
+.instrument-glass .input-page input { background: var(--surface-muted); }
+.instrument-glass .calculate-page { padding-inline: 12px; }
+.instrument-glass .calculate-header { margin-top: 4px; }
+.instrument-glass .calculate-header > div > .h-16 { height: auto; min-height: 64px; gap: 12px; }
+.instrument-glass .calculate-header > div > div > a { display: none; }
+.instrument-glass .calculate-header [role="tablist"] { background: transparent !important; border: 0; box-shadow: none; }
+.instrument-glass .calculate-header [role="tab"] { border-radius: 999px; white-space: nowrap; }
+.instrument-glass .calculate-header [role="tab"][aria-selected="true"] { background: var(--accent-muted) !important; box-shadow: inset 0 1px 0 var(--glass-edge), 0 3px 8px rgba(15,65,85,.08); }
+@media (min-width: 768px) and (max-width: 1279px) {
+  .instrument-glass .calculate-header > div > div > nav { display: none; }
+  .instrument-glass .calculate-header > .md\:hidden { display: block; }
+  .instrument-glass .calculate-header > div > .h-16 { justify-content: flex-end; }
+}
+@media (max-width: 767px) {
+  .instrument-glass .calculate-page { padding-inline: 0; }
+  .instrument-glass .calculate-header { margin-inline: 8px; }
+  .instrument-glass .input-page { padding-top: 3rem; padding-inline: 20px; }
+  .instrument-glass .input-page form { padding: 24px; }
+}
+
+/* Calculator-specific result categories. */
 .calculator-theme.liquid-glass {
   --glass-panel: rgba(255,255,255,.78);
   --glass-edge: rgba(255,255,255,.9);
@@ -51,7 +120,7 @@
 .liquid-glass .calculate-page {
   background: radial-gradient(ellipse at 5% 5%, rgba(34,211,238,.18), transparent 42%), radial-gradient(ellipse at 95% 38%, rgba(129,140,248,.13), transparent 45%), radial-gradient(ellipse at 30% 95%, rgba(45,212,191,.12), transparent 45%), var(--surface) !important;
 }
-.liquid-glass :is(.calculate-header, .surface-theme-toggle, [role="dialog"], main .rounded-xl.border) {
+.liquid-glass :is(.calculate-header, [role="dialog"]) {
   background: var(--glass-panel) !important;
   border-color: var(--glass-edge) !important;
   box-shadow: var(--glass-shadow);
@@ -69,9 +138,20 @@
 }
 @media (prefers-reduced-transparency: reduce) {
   .calculator-theme.liquid-glass, .dark .calculator-theme.liquid-glass { --glass-panel: var(--surface-elevated); }
-  .liquid-glass :is(.calculate-header, .surface-theme-toggle, [role="dialog"], main .rounded-xl.border) { background: var(--surface-elevated) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .liquid-glass :is(.calculate-header, [role="dialog"]) { background: var(--surface-elevated) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .liquid-glass .calculate-page { background: var(--surface) !important; }
   .liquid-glass .result-stat-card { background: color-mix(in srgb, var(--result-tint) 9%, var(--surface-elevated)); }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .instrument-glass .site-navigation { background: var(--surface-elevated) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .instrument-glass :is(.site-navigation, .calculate-header, [role="dialog"]) { background: var(--surface-elevated) !important; backdrop-filter: none !important; }
+}
+@media print {
+  .instrument-glass { background: white; }
+  .instrument-glass :is(.site-navigation, .calculate-header) { display: none; }
 }
 
 html { scroll-behavior: smooth; }

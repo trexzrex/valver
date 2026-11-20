@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[100dvh] flex items-center overflow-hidden pt-24 pb-12 px-6 md:px-8">
+    <section className="instrument-hero relative min-h-[100dvh] flex items-center overflow-hidden pt-24 pb-12 px-6 md:px-8">
       {/* Background gradient */}
       <div
         className="absolute inset-0"
