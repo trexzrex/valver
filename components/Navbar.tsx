@@ -59,7 +59,7 @@ export function Navbar() {
           >
             <Flask size={18} weight="fill" className="text-white" />
           </span>
-          <span className="hidden sm:block">Valver</span>
+          <span>Valver</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
