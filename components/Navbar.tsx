@@ -2,18 +2,42 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { nextNavigationHidden } from "@/lib/navigationScroll";
 import { Flask, List, X } from "@phosphor-icons/react";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    let hidden = false;
+    let anchor = Math.max(0, window.scrollY);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const locked = menuOpen || !!headerRef.current?.contains(document.activeElement);
+      const next = nextNavigationHidden(hidden, anchor, Math.max(0, window.scrollY), locked);
+      hidden = next.hidden;
+      anchor = next.anchor;
+      document.documentElement.dataset.navigationHidden = String(hidden);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    window.addEventListener("scroll", schedule, { passive: true });
+    headerRef.current?.addEventListener("focusin", schedule);
+    update();
+    const header = headerRef.current;
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      header?.removeEventListener("focusin", schedule);
+      cancelAnimationFrame(frame);
+      delete document.documentElement.dataset.navigationHidden;
+    };
+  }, [menuOpen]);
 
   return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    <header ref={headerRef}
       className="site-navigation fixed top-3 left-3 right-3 z-50 rounded-2xl border"
       style={{
         background: "color-mix(in srgb, var(--surface) 80%, transparent)",
@@ -120,6 +144,6 @@ export function Navbar() {
             </div>
           </motion.div>
         )}
-    </motion.header>
+    </header>
   );
 }

@@ -283,22 +283,22 @@ export function PDFExportButton({
       whileTap={{ scale: 0.98 }}
       onClick={generatePDF}
       disabled={isGenerating}
-      className="flex items-center gap-2 px-6 py-3 rounded-full border font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-      style={{
-        background: "rgba(245, 158, 11, 0.15)",
-        borderColor: "rgba(245, 158, 11, 0.3)",
-        color: "#f59e0b",
-      }}
+      aria-label={isGenerating ? "Membuat PDF" : "Ekspor PDF"}
+      aria-busy={isGenerating}
+      className="pdf-export-button flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+      style={{ background: "var(--accent-muted)", borderColor: "var(--border-default)", color: "var(--accent)" }}
     >
       {isGenerating ? (
         <>
           <CircleNotch size={18} weight="bold" className="animate-spin" />
-          Membuat PDF...
+          <span className="hidden xl:inline">Membuat PDF...</span>
+          <span className="xl:hidden">PDF</span>
         </>
       ) : (
         <>
           <FileArrowDown size={20} weight="bold" />
-          Ekspor PDF
+          <span className="hidden xl:inline">Ekspor PDF</span>
+          <span className="xl:hidden">PDF</span>
         </>
       )}
       </motion.button>

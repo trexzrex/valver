@@ -100,6 +100,28 @@
   .instrument-glass .input-page form { padding: 24px; }
 }
 
+/* A single coordinated navigation stack: the section rail replaces the site bar on downward scroll. */
+.instrument-glass .site-navigation { transition: transform 300ms cubic-bezier(.22,1,.36,1), opacity 250ms ease; }
+html[data-navigation-hidden="true"] .instrument-glass .site-navigation { transform: translateY(calc(-100% - 20px)); opacity: 0; pointer-events: none; }
+.instrument-glass .calculate-header { top: 88px; transition: top 300ms cubic-bezier(.22,1,.36,1); }
+html[data-navigation-hidden="true"] .instrument-glass .calculate-header { top: 12px; }
+.instrument-glass .calculate-header { display: flex; align-items: center; gap: 8px; padding: 8px; }
+.instrument-glass .calculate-header > div:first-child { padding: 0; min-width: 0; flex: 1; }
+.instrument-glass .calculate-header > div > .h-16 { min-height: 44px; }
+.instrument-glass .calculate-header [role="tab"] { min-height: 44px; }
+.instrument-glass .pdf-export-button { box-shadow: inset 0 1px 0 var(--glass-edge); }
+.instrument-glass .pdf-export-button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, var(--surface-elevated)); }
+@media (max-width: 1279px) {
+  .instrument-glass .calculate-header > div:first-child { flex: 0 0 auto; order: 2; }
+  .instrument-glass .calculate-header > div:last-child { display: block; flex: 1; min-width: 0; padding: 0; overflow-x: auto; order: 1; }
+  .instrument-glass .calculate-header > div:last-child nav { padding: 0; gap: 4px; }
+  .instrument-glass .calculate-header > div > div > nav { display: none; }
+  .instrument-glass .calculate-header .calculator-export { padding-left: 8px; border-left: 1px solid var(--border-default); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .instrument-glass :is(.site-navigation, .calculate-header) { transition: none; }
+}
+
 /* Calculator-specific result categories. */
 .calculator-theme.liquid-glass {
   --glass-panel: rgba(255,255,255,.78);

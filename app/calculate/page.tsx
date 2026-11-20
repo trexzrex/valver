@@ -187,7 +187,7 @@ export default function CalculatePage() {
                 ))}
               </nav>
 
-              <div className="flex items-center gap-2">
+              <div className="calculator-export flex items-center gap-2">
                 <PDFExportButton
                   calibration={calibration}
                   lowResult={lowResult}
