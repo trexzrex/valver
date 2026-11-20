@@ -83,7 +83,6 @@ export function BlankoTable({ data, result, onUpdate, onAddRow, onRemoveRow, mdl
       <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Tabel Limit Deteksi (Blanko)</h3>
 
       <EditableTable
-         className="w-fit max-w-full"
          data={data}
          columns={columns}
         onAddRow={onAddRow}

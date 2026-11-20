@@ -75,7 +75,7 @@ export function EditableTable<T>({
   return (
     <div className={`min-w-0 w-full max-w-full overflow-hidden rounded-xl border ${className}`} style={{ background: "var(--surface-muted)", borderColor: "var(--border-default)" }}>
       <div className="min-w-0 w-full max-w-full overflow-x-auto overscroll-x-contain scrollable-table" style={{ touchAction: 'auto' }}>
-        <table className="w-max min-w-[760px] text-sm">
+        <table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b" style={{ background: "var(--surface-elevated)", borderColor: "var(--border-default)" }}>
             {columns.map((col) => (
@@ -102,7 +102,7 @@ export function EditableTable<T>({
               {columns.map((col) => (
                 <td
                   key={String(col.key)}
-                  className={`px-4 py-3 ${col.className || ""}`}
+                  className={`px-4 py-3 ${col.key === "no" ? "whitespace-nowrap" : ""} ${col.className || ""}`}
                 >
                   {col.key === "actions" ? (
                     <div className="flex items-center gap-2">

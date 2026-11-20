@@ -122,7 +122,6 @@ export function SpikeTable({
       </div>
 
       <EditableTable
-         className="w-fit max-w-full"
          data={data}
          columns={columns}
         onAddRow={onAddRow}
